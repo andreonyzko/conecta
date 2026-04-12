@@ -1,6 +1,22 @@
 export type UserRole = 'agricultor' | 'instituicao';
-export type PropostaStatus = 'pendente' | 'aceita' | 'rejeitada';
+export type PropostaStatus = 'pendente' | 'aceita' | 'rejeitada' | 'chamada_cancelada';
 export type ChamadaStatus = 'ativa' | 'encerrada' | 'cancelada';
+
+export interface AvaliacaoAgricultor {
+  id: string;
+  instituicaoId: string;
+  nota: number;
+  comentario: string;
+  data: string;
+}
+
+export interface LicitacaoGanha {
+  id: string;
+  chamadaId: string;
+  instituicaoId: string;
+  valor: number;
+  dataConclusao: string;
+}
 
 export interface ProdutoAgricultor {
   id: string;
@@ -22,6 +38,8 @@ export interface Agricultor {
   email: string;
   realizaEntrega: boolean;
   produtos: ProdutoAgricultor[];
+  avaliacoes: AvaliacaoAgricultor[];
+  licitacoesGanhas: LicitacaoGanha[];
 }
 
 export interface Instituicao {
@@ -73,4 +91,10 @@ export interface Proposta {
   valorTotal: number;
   status: PropostaStatus;
   dataCriacao: string;
+}
+
+export interface AvaliacaoEncerramento {
+  agricultorId: string;
+  nota: number;
+  comentario: string;
 }

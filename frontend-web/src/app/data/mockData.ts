@@ -41,6 +41,31 @@ export const mockAgricultores: Agricultor[] = [
         precoSugerido: 2.5,
       },
     ],
+    avaliacoes: [
+      {
+        id: 'ava-1',
+        instituicaoId: 'inst-1',
+        nota: 5,
+        comentario: 'Entrega no prazo e produtos com excelente qualidade.',
+        data: '2026-03-28',
+      },
+      {
+        id: 'ava-2',
+        instituicaoId: 'inst-2',
+        nota: 4,
+        comentario: 'Boa comunicação e ótima apresentação dos itens entregues.',
+        data: '2026-04-04',
+      },
+    ],
+    licitacoesGanhas: [
+      {
+        id: 'lic-1',
+        chamadaId: 'cha-2',
+        instituicaoId: 'inst-2',
+        valor: 1650,
+        dataConclusao: '2026-04-25',
+      },
+    ],
   },
   {
     id: 'agr-2',
@@ -72,6 +97,16 @@ export const mockAgricultores: Agricultor[] = [
         precoSugerido: 3.5,
       },
     ],
+    avaliacoes: [
+      {
+        id: 'ava-3',
+        instituicaoId: 'inst-3',
+        nota: 5,
+        comentario: 'Produtos muito bem selecionados e ótimo atendimento.',
+        data: '2026-02-18',
+      },
+    ],
+    licitacoesGanhas: [],
   },
   {
     id: 'agr-3',
@@ -101,6 +136,24 @@ export const mockAgricultores: Agricultor[] = [
         mesesDisponiveis: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai'],
         organico: false,
         precoSugerido: 4.0,
+      },
+    ],
+    avaliacoes: [
+      {
+        id: 'ava-4',
+        instituicaoId: 'inst-3',
+        nota: 4,
+        comentario: 'Entrega pontual e frutas frescas.',
+        data: '2026-03-30',
+      },
+    ],
+    licitacoesGanhas: [
+      {
+        id: 'lic-2',
+        chamadaId: 'cha-3',
+        instituicaoId: 'inst-3',
+        valor: 3210,
+        dataConclusao: '2026-03-31',
       },
     ],
   },

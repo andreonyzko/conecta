@@ -10,6 +10,8 @@ import {
   AlertTriangle,
   Clock,
   User,
+  ChevronRight,
+  Ban,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppContext } from '../context/AppContext';
@@ -43,6 +45,12 @@ const statusConfig: Record<PropostaStatus, { label: string; color: string; bg: s
     bg: 'bg-[#E74C3C]/15',
     icon: <XCircle size={14} />,
   },
+  chamada_cancelada: {
+    label: 'Chamada cancelada',
+    color: 'text-[#F97316]',
+    bg: 'bg-[#F97316]/15',
+    icon: <Ban size={14} />,
+  },
 };
 
 export function PropostaDetalhe() {
@@ -57,6 +65,7 @@ export function PropostaDetalhe() {
     currentUserId,
     cancelarProposta,
     updatePropostaStatus,
+    canAcceptProposta,
   } = useAppContext();
 
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -91,6 +100,12 @@ export function PropostaDetalhe() {
   };
 
   const handleAccept = () => {
+    const validation = canAcceptProposta(proposta.id);
+    if (!validation.canAccept) {
+      toast.error(`Os itens ${validation.blockedProducts.join(', ')} já foram aceitos em outra proposta.`);
+      return;
+    }
+
     updatePropostaStatus(proposta.id, 'aceita');
     toast.success('Proposta aceita com sucesso!');
     navigate(-1);
@@ -128,25 +143,36 @@ export function PropostaDetalhe() {
       <div className="flex-1 overflow-y-auto agro-scroll px-4 pt-5 pb-4">
         {/* Chamada reference */}
         {chamada && (
-          <div className="bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-4">
+          <button
+            onClick={() => navigate(`/chamadas/${chamada.id}`)}
+            className="w-full bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-4 text-left active:border-[#149D7F]/40"
+          >
             <p className="text-[#B0B3B8]" style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Chamada
             </p>
             <p className="text-white mt-1" style={{ fontSize: '14px', fontWeight: 600 }}>
               {chamada.titulo}
             </p>
-            <p className="text-[#B0B3B8] mt-0.5" style={{ fontSize: '12px' }}>
-              {inst?.nome}
-            </p>
-          </div>
+            <div className="flex items-center justify-between mt-0.5 gap-3">
+              <p className="text-[#B0B3B8]" style={{ fontSize: '12px' }}>
+                {inst?.nome}
+              </p>
+              <span className="text-[#149D7F] flex items-center gap-1" style={{ fontSize: '12px', fontWeight: 600 }}>
+                Ver chamada <ChevronRight size={14} />
+              </span>
+            </div>
+          </button>
         )}
 
         {/* Agricultor info */}
-        <div className="flex items-center gap-3 mb-5">
+        <button
+          onClick={() => navigate(`/perfil/agricultor/${proposta.agricultorId}`)}
+          className="flex items-center gap-3 mb-5 text-left active:opacity-80"
+        >
           <div className="w-12 h-12 rounded-full bg-[#2F3336] flex items-center justify-center">
             <User size={22} className="text-[#B0B3B8]" />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-white" style={{ fontSize: '15px', fontWeight: 600 }}>
               {agricultor?.nome}
             </p>
@@ -154,7 +180,8 @@ export function PropostaDetalhe() {
               Enviada em {formatDate(proposta.dataCriacao)}
             </p>
           </div>
-        </div>
+          <ChevronRight size={16} className="text-[#149D7F]" />
+        </button>
 
         {/* Delivery */}
         <div

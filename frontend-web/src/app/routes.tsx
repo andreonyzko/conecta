@@ -1,8 +1,8 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router';
 import { PhoneWrapper } from './components/PhoneWrapper';
 import { MainLayout } from './components/MainLayout';
 import { RoleSelection } from './pages/RoleSelection';
-import { Chamadas } from './pages/Chamadas';
+import { ChamadasCentered } from './pages/ChamadasCentered';
 import { ChamadaDetalhe } from './pages/ChamadaDetalhe';
 import { Propostas } from './pages/Propostas';
 import { PropostasInstituicao } from './pages/PropostasInstituicao';
@@ -11,6 +11,17 @@ import { Perfil, PerfilAgricultorView, PerfilInstituicaoView } from './pages/Per
 import { EditarPerfil } from './pages/EditarPerfil';
 import { CriarChamada } from './pages/CriarChamada';
 import { EnviarProposta } from './pages/EnviarProposta';
+import { useAppContext } from './context/AppContext';
+
+function RequireAuth() {
+  const { isAuthenticated } = useAppContext();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+}
 
 export const router = createBrowserRouter([
   {
@@ -19,23 +30,28 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: RoleSelection },
       {
-        // Pathless layout route (with BottomNav)
-        Component: MainLayout,
+        Component: RequireAuth,
         children: [
-          { path: 'chamadas', Component: Chamadas },
-          { path: 'propostas', Component: Propostas },
-          { path: 'perfil', Component: Perfil },
+          {
+            // Pathless layout route (with BottomNav)
+            Component: MainLayout,
+            children: [
+              { path: 'chamadas', Component: ChamadasCentered },
+              { path: 'propostas', Component: Propostas },
+              { path: 'perfil', Component: Perfil },
+            ],
+          },
+          // Detail / Form pages (no BottomNav)
+          { path: 'chamadas/:id', Component: ChamadaDetalhe },
+          { path: 'chamadas/:chamadaId/propostas', Component: PropostasInstituicao },
+          { path: 'propostas/:id', Component: PropostaDetalhe },
+          { path: 'perfil/editar', Component: EditarPerfil },
+          { path: 'perfil/agricultor/:id', Component: PerfilAgricultorView },
+          { path: 'perfil/instituicao/:id', Component: PerfilInstituicaoView },
+          { path: 'criar-chamada', Component: CriarChamada },
+          { path: 'enviar-proposta/:chamadaId', Component: EnviarProposta },
         ],
       },
-      // Detail / Form pages (no BottomNav)
-      { path: 'chamadas/:id', Component: ChamadaDetalhe },
-      { path: 'chamadas/:chamadaId/propostas', Component: PropostasInstituicao },
-      { path: 'propostas/:id', Component: PropostaDetalhe },
-      { path: 'perfil/editar', Component: EditarPerfil },
-      { path: 'perfil/agricultor/:id', Component: PerfilAgricultorView },
-      { path: 'perfil/instituicao/:id', Component: PerfilInstituicaoView },
-      { path: 'criar-chamada', Component: CriarChamada },
-      { path: 'enviar-proposta/:chamadaId', Component: EnviarProposta },
     ],
   },
 ]);

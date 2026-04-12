@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Truck, TruckIcon, User, CheckCircle, XCircle, Eye } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowLeft, Truck, TruckIcon, User, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Proposta, PropostaStatus } from '../types';
 
@@ -12,33 +11,43 @@ const statusColors: Record<PropostaStatus, string> = {
   pendente: 'text-yellow-400',
   aceita: 'text-[#149D7F]',
   rejeitada: 'text-[#E74C3C]',
+  chamada_cancelada: 'text-[#F97316]',
 };
 
 const statusLabels: Record<PropostaStatus, string> = {
   pendente: 'Pendente',
   aceita: 'Aceita',
   rejeitada: 'Rejeitada',
+  chamada_cancelada: 'Chamada cancelada',
 };
 
 function PropostaItem({
   proposta,
   agricultorNome,
   onView,
-  onAccept,
-  onReject,
+  onOpenAgricultor,
 }: {
   proposta: Proposta;
   agricultorNome: string;
   onView: () => void;
-  onAccept: () => void;
-  onReject: () => void;
+  onOpenAgricultor: () => void;
 }) {
   const resumoItens = proposta.itens
     .map((i) => `${i.produto} (${i.quantidade}${i.unidade})`)
     .join(', ');
 
   return (
-    <div className="bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-3">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onView}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          onView();
+        }
+      }}
+      className="w-full bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-3 text-left active:border-[#149D7F]/40"
+    >
       {/* Top row */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2.5">
@@ -46,9 +55,17 @@ function PropostaItem({
             <User size={16} className="text-[#B0B3B8]" />
           </div>
           <div>
-            <p className="text-white" style={{ fontSize: '14px', fontWeight: 600 }}>
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+                onOpenAgricultor();
+              }}
+              className="text-white text-left active:text-[#149D7F]"
+              style={{ fontSize: '14px', fontWeight: 600 }}
+            >
               {agricultorNome}
-            </p>
+            </button>
             <span className={`${statusColors[proposta.status]}`} style={{ fontSize: '11px', fontWeight: 600 }}>
               {statusLabels[proposta.status]}
             </span>
@@ -79,33 +96,19 @@ function PropostaItem({
         {resumoItens}
       </p>
 
-      {/* Actions */}
-      <div className="flex gap-2">
-        {proposta.status === 'pendente' && (
-          <>
-            <button
-              onClick={onAccept}
-              className="flex-1 bg-[#149D7F] text-white rounded-full py-2.5 flex items-center justify-center gap-1.5 active:opacity-80"
-              style={{ fontSize: '13px', fontWeight: 600 }}
-            >
-              <CheckCircle size={14} /> Aceitar
-            </button>
-            <button
-              onClick={onReject}
-              className="flex-1 border border-[#E74C3C] text-[#E74C3C] rounded-full py-2.5 flex items-center justify-center gap-1.5 active:bg-[#E74C3C]/10"
-              style={{ fontSize: '13px', fontWeight: 600 }}
-            >
-              <XCircle size={14} /> Rejeitar
-            </button>
-          </>
+      <div className="flex items-center justify-between">
+        <span className="text-[#B0B3B8]" style={{ fontSize: '12px' }}>
+          Toque no card para visualizar a proposta completa
+        </span>
+        {proposta.status === 'pendente' ? (
+          <CheckCircle size={14} className="text-[#149D7F]" />
+        ) : proposta.status === 'rejeitada' ? (
+          <XCircle size={14} className="text-[#E74C3C]" />
+        ) : proposta.status === 'chamada_cancelada' ? (
+          <Ban size={14} className="text-[#F97316]" />
+        ) : (
+          <CheckCircle size={14} className="text-[#149D7F]" />
         )}
-        <button
-          onClick={onView}
-          className={`${proposta.status === 'pendente' ? 'px-3' : 'flex-1'} border border-[#2F3336] text-white rounded-full py-2.5 flex items-center justify-center gap-1.5 active:bg-[#2F3336]`}
-          style={{ fontSize: '13px', fontWeight: 600 }}
-        >
-          <Eye size={14} /> Ver
-        </button>
       </div>
     </div>
   );
@@ -114,21 +117,10 @@ function PropostaItem({
 export function PropostasInstituicao() {
   const { chamadaId } = useParams<{ chamadaId: string }>();
   const navigate = useNavigate();
-  const { getChamada, getPropostasForChamada, getAgricultor, updatePropostaStatus } =
-    useAppContext();
+  const { getChamada, getPropostasForChamada, getAgricultor } = useAppContext();
 
   const chamada = getChamada(chamadaId!);
   const propostas = getPropostasForChamada(chamadaId!);
-
-  const handleAccept = (propostaId: string) => {
-    updatePropostaStatus(propostaId, 'aceita');
-    toast.success('Proposta aceita com sucesso!');
-  };
-
-  const handleReject = (propostaId: string) => {
-    updatePropostaStatus(propostaId, 'rejeitada');
-    toast.error('Proposta rejeitada.');
-  };
 
   return (
     <div className="flex-1 flex flex-col bg-[#121212] min-h-0">
@@ -182,8 +174,7 @@ export function PropostasInstituicao() {
                 proposta={p}
                 agricultorNome={agr?.nome || 'Agricultor'}
                 onView={() => navigate(`/propostas/${p.id}`)}
-                onAccept={() => handleAccept(p.id)}
-                onReject={() => handleReject(p.id)}
+                onOpenAgricultor={() => navigate(`/perfil/agricultor/${p.agricultorId}`)}
               />
             );
           })

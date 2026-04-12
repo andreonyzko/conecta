@@ -6,6 +6,15 @@ import { useAppContext } from '../context/AppContext';
 import { ProdutoAgricultor } from '../types';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const CATEGORIAS = [
+  'Hortaliças',
+  'Frutas',
+  'Leguminosas',
+  'Raízes e Tubérculos',
+  'Grãos e Cereais',
+  'Laticínios',
+  'Outro',
+];
 
 const inputClass =
   'w-full bg-[#1D2226] border border-[#2F3336] text-white rounded-xl px-4 py-3 focus:border-[#149D7F] focus:outline-none placeholder:text-[#B0B3B8]';
@@ -22,6 +31,8 @@ function ProdutoModal({
   onSave: (p: ProdutoAgricultor) => void;
   onClose: () => void;
 }) {
+  const initialCategoria =
+    initial && CATEGORIAS.includes(initial.categoria) ? initial.categoria : initial?.categoria ? 'Outro' : '';
   const [form, setForm] = useState<ProdutoForm>(
     initial ?? {
       nome: '',
@@ -32,6 +43,10 @@ function ProdutoModal({
       organico: false,
       precoSugerido: 0,
     }
+  );
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(initialCategoria);
+  const [outraCategoria, setOutraCategoria] = useState(
+    initialCategoria === 'Outro' ? initial?.categoria || '' : ''
   );
 
   const toggleMes = (m: string) => {
@@ -44,11 +59,13 @@ function ProdutoModal({
   };
 
   const handleSave = () => {
-    if (!form.nome.trim() || !form.categoria.trim()) {
+    const categoriaFinal = categoriaSelecionada === 'Outro' ? outraCategoria.trim() : categoriaSelecionada;
+
+    if (!form.nome.trim() || !categoriaFinal) {
       toast.error('Preencha o nome e a categoria.');
       return;
     }
-    onSave({ ...form, id: initial?.id || `prod-${Date.now()}` });
+    onSave({ ...form, categoria: categoriaFinal, id: initial?.id || `prod-${Date.now()}` });
   };
 
   return (
@@ -76,13 +93,37 @@ function ProdutoModal({
           </div>
           <div>
             <label className={labelClass} style={{ fontSize: '14px' }}>Categoria</label>
-            <input
+            <select
               className={inputClass}
               style={{ fontSize: '14px' }}
-              placeholder="Ex: Hortaliças, Frutas..."
-              value={form.categoria}
-              onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value }))}
-            />
+              value={categoriaSelecionada}
+              onChange={(e) => {
+                const value = e.target.value;
+                setCategoriaSelecionada(value);
+                if (value !== 'Outro') {
+                  setForm((f) => ({ ...f, categoria: value }));
+                }
+              }}
+            >
+              <option value="">Selecione uma categoria</option>
+              {CATEGORIAS.map((categoria) => (
+                <option key={categoria} value={categoria}>
+                  {categoria}
+                </option>
+              ))}
+            </select>
+            {categoriaSelecionada === 'Outro' && (
+              <input
+                className={`${inputClass} mt-2`}
+                style={{ fontSize: '14px' }}
+                placeholder="Digite a categoria"
+                value={outraCategoria}
+                onChange={(e) => {
+                  setOutraCategoria(e.target.value);
+                  setForm((f) => ({ ...f, categoria: e.target.value }));
+                }}
+              />
+            )}
           </div>
           <div className="flex gap-3">
             <div className="flex-1">

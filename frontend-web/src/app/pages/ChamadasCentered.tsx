@@ -48,7 +48,7 @@ function ChamadaCard({ chamada, instNome }: { chamada: Chamada; instNome: string
       <div className="flex items-center gap-1.5 mb-2">
         <Calendar size={12} className="text-[#B0B3B8]" />
         <span className="text-[#B0B3B8]" style={{ fontSize: '12px' }}>
-          {formatDate(chamada.dataInicio)} – {formatDate(chamada.dataFim)}
+          {formatDate(chamada.dataInicio)} - {formatDate(chamada.dataFim)}
         </span>
       </div>
 
@@ -63,11 +63,12 @@ function ChamadaCard({ chamada, instNome }: { chamada: Chamada; instNome: string
   );
 }
 
-export function Chamadas() {
+export function ChamadasCentered() {
   const { chamadas, role, currentUserId, propostas, getInstituicao } = useAppContext();
   const [activeTab, setActiveTab] = useState<'todas' | 'minhas'>('todas');
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+
   const minhasChamadas =
     role === 'agricultor'
       ? chamadas.filter((c) => propostas.some((p) => p.chamadaId === c.id && p.agricultorId === currentUserId))
@@ -82,15 +83,12 @@ export function Chamadas() {
 
   return (
     <div className="flex flex-col bg-[#121212] h-full">
-      {/* Header */}
       <div className="bg-[#1D2226] border-b border-[#2F3336] px-4 pt-3 pb-0 flex-shrink-0">
-        <div className="relative flex items-center justify-between mb-3">
-          <div className="flex-1 flex justify-center">
-            <img src={BRAND_ICON_SRC} alt={BRAND_NAME} className="w-35 h-11 object-contain" />
-          </div>
+        <div className="relative flex items-center justify-center mb-3 min-h-[44px]">
+          <img src={BRAND_ICON_SRC} alt={BRAND_NAME} className="w-35 h-11 object-contain" />
           <button
             onClick={() => setShowSearch(!showSearch)}
-            className="position-absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#B0B3B8] rounded-full active:bg-[#2F3336]"
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-[#B0B3B8] rounded-full active:bg-[#2F3336]"
           >
             <Search size={20} />
           </button>
@@ -109,7 +107,6 @@ export function Chamadas() {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="flex">
           {availableTabs.map((tab) => (
             <button
@@ -129,7 +126,6 @@ export function Chamadas() {
         </div>
       </div>
 
-      {/* List */}
       <div className="flex-1 overflow-y-auto agro-scroll px-4 pt-4 pb-4">
         {list.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -141,9 +137,7 @@ export function Chamadas() {
             </p>
             <p className="text-[#B0B3B8] mt-1" style={{ fontSize: '13px' }}>
               {role !== 'agricultor' && activeTab === 'minhas'
-                ? role === 'agricultor'
-                  ? 'Você ainda não enviou propostas'
-                  : 'Você não publicou chamadas ainda'
+                ? 'Você não publicou chamadas ainda'
                 : 'Tente ajustar sua busca'}
             </p>
           </div>

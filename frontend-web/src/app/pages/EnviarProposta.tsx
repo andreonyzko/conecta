@@ -27,13 +27,21 @@ function ItemModal({
   initial?: ItemProposta;
   onSave: (item: ItemProposta) => void;
   onClose: () => void;
-  chamadaItens: Array<{ produto: string; unidade: string }>;
+  chamadaItens: Array<{ produto: string; unidade: string; categoria: string }>;
 }) {
+  const categorias = Array.from(new Set(chamadaItens.map((item) => item.categoria)));
+  const initialCategoria =
+    chamadaItens.find((item) => item.produto === initial?.produto)?.categoria || '';
+  const [categoria, setCategoria] = useState(initialCategoria);
+  const [selectedProduto, setSelectedProduto] = useState(initial?.produto || '');
   const [form, setForm] = useState<ItemPropostaForm>(
     initial
       ? { produto: initial.produto, quantidade: initial.quantidade, unidade: initial.unidade, precoPorUnidade: initial.precoPorUnidade }
       : { ...emptyItem }
   );
+  const produtosFiltrados = categoria
+    ? chamadaItens.filter((item) => item.categoria === categoria)
+    : chamadaItens;
 
   const total = form.quantidade * form.precoPorUnidade;
 
@@ -62,29 +70,51 @@ function ItemModal({
 
         <div className="overflow-y-auto agro-scroll px-4 py-4 flex-1 flex flex-col gap-4">
           <div>
+            <label className={labelClass} style={{ fontSize: '14px' }}>Categoria</label>
+            <select
+              className={inputClass}
+              style={{ fontSize: '14px' }}
+              value={categoria}
+              onChange={(e) => {
+                const nextCategoria = e.target.value;
+                setCategoria(nextCategoria);
+                setSelectedProduto('');
+                setForm((f) => ({ ...f, produto: '' }));
+              }}
+            >
+              <option value="">Selecione uma categoria</option>
+              {categorias.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className={labelClass} style={{ fontSize: '14px' }}>Produto</label>
             {chamadaItens.length > 0 ? (
               <select
                 className={inputClass}
                 style={{ fontSize: '14px' }}
-                value={form.produto}
+                value={selectedProduto}
+                disabled={!categoria}
                 onChange={(e) => {
-                  const found = chamadaItens.find((i) => i.produto === e.target.value);
-                  setForm((f) => ({ ...f, produto: e.target.value, unidade: found?.unidade || f.unidade }));
+                  const found = produtosFiltrados.find((i) => i.produto === e.target.value);
+                  setSelectedProduto(e.target.value);
+                  setForm((f) => ({
+                    ...f,
+                    produto: e.target.value,
+                    unidade: found?.unidade || f.unidade,
+                  }));
                 }}
               >
                 <option value="">Selecione um produto</option>
-                {chamadaItens.map((i) => (
+                {produtosFiltrados.map((i) => (
                   <option key={i.produto} value={i.produto}>{i.produto}</option>
                 ))}
-                <option value="__outro__">Outro...</option>
               </select>
-            ) : (
-              <input className={inputClass} style={{ fontSize: '14px' }} placeholder="Nome do produto" value={form.produto} onChange={(e) => setForm((f) => ({ ...f, produto: e.target.value }))} />
-            )}
-            {form.produto === '__outro__' && (
-              <input className={`${inputClass} mt-2`} style={{ fontSize: '14px' }} placeholder="Digite o nome do produto" value="" onChange={(e) => setForm((f) => ({ ...f, produto: e.target.value }))} autoFocus />
-            )}
+            ) : null}
           </div>
 
           <div className="flex gap-3">
@@ -131,7 +161,14 @@ function ItemModal({
 export function EnviarProposta() {
   const { chamadaId } = useParams<{ chamadaId: string }>();
   const navigate = useNavigate();
-  const { getChamada, getInstituicao, addProposta, currentUserId, propostas } = useAppContext();
+  const {
+    getChamada,
+    getInstituicao,
+    addProposta,
+    currentUserId,
+    propostas,
+    getItensDisponiveisForChamada,
+  } = useAppContext();
 
   const chamada = getChamada(chamadaId!);
   const inst = chamada ? getInstituicao(chamada.instituicaoId) : null;
@@ -152,9 +189,15 @@ export function EnviarProposta() {
   }
 
   const jaEnviou = propostas.some((p) => p.chamadaId === chamadaId && p.agricultorId === currentUserId);
+  const itensDisponiveis = getItensDisponiveisForChamada(chamadaId!);
   const valorTotal = itens.reduce((sum, i) => sum + i.total, 0);
 
   const handleAddItem = (item: ItemProposta) => {
+    if (!itensDisponiveis.some((disponivel) => disponivel.produto === item.produto)) {
+      toast.error('Esse item já foi atendido por outra proposta aceita.');
+      return;
+    }
+
     if (editingItem) {
       setItens((prev) => prev.map((x) => (x.id === item.id ? item : x)));
     } else {
@@ -166,7 +209,13 @@ export function EnviarProposta() {
 
   const handleEnviar = () => {
     if (jaEnviou) { toast.error('Você já enviou uma proposta para esta chamada.'); return; }
+    if (chamada.status !== 'ativa') { toast.error('Esta chamada não está mais recebendo propostas.'); return; }
+    if (itensDisponiveis.length === 0) { toast.error('Todos os itens desta chamada já foram atendidos.'); return; }
     if (itens.length === 0) { toast.error('Adicione ao menos um item à proposta.'); return; }
+    if (itens.some((item) => !itensDisponiveis.some((disponivel) => disponivel.produto === item.produto))) {
+      toast.error('Há itens na proposta que já foram atendidos por outros agricultores.');
+      return;
+    }
 
     addProposta({
       chamadaId: chamadaId!,
@@ -205,6 +254,14 @@ export function EnviarProposta() {
         </div>
       )}
 
+      {!jaEnviou && itensDisponiveis.length === 0 && (
+        <div className="mx-4 mt-4 bg-[#E74C3C]/10 border border-[#E74C3C]/30 rounded-xl p-3.5">
+          <span className="text-[#E74C3C]" style={{ fontSize: '13px' }}>
+            Todos os itens desta chamada já foram atendidos por propostas aceitas.
+          </span>
+        </div>
+      )}
+
       {/* Form */}
       <div className="flex-1 overflow-y-auto agro-scroll px-4 pt-4 pb-4 flex flex-col gap-5">
         {/* Items */}
@@ -216,6 +273,7 @@ export function EnviarProposta() {
             </div>
             <button
               onClick={() => { setEditingItem(undefined); setShowModal(true); }}
+              disabled={itensDisponiveis.length === 0}
               className="flex items-center gap-1.5 text-[#149D7F]"
               style={{ fontSize: '13px', fontWeight: 600 }}
             >
@@ -316,7 +374,7 @@ export function EnviarProposta() {
           initial={editingItem}
           onSave={handleAddItem}
           onClose={() => { setShowModal(false); setEditingItem(undefined); }}
-          chamadaItens={chamada.itens.map((i) => ({ produto: i.produto, unidade: i.unidade }))}
+          chamadaItens={itensDisponiveis.map((i) => ({ produto: i.produto, unidade: i.unidade, categoria: i.categoria }))}
         />
       )}
     </div>

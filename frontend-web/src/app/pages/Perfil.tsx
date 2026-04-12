@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft,
+  Star,
   User,
   Sprout,
   School,
@@ -10,10 +11,20 @@ import {
   CheckCircle,
   Users,
   ChevronRight,
-  RefreshCw,
+  LogOut,
+  Trophy,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Agricultor, Instituicao, ProdutoAgricultor, Chamada } from '../types';
+
+function formatDate(date: string) {
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function formatCurrency(value: number) {
+  return `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+}
 
 function ProdutoCard({ produto }: { produto: ProdutoAgricultor }) {
   return (
@@ -63,11 +74,17 @@ function AgricultorProfile({
   isOwner: boolean;
   onEdit?: () => void;
 }) {
+  const { getInstituicao, getChamada } = useAppContext();
   const initials = agricultor.nome
     .split(' ')
     .slice(0, 2)
     .map((n) => n[0])
     .join('');
+  const mediaAvaliacoes =
+    agricultor.avaliacoes.length > 0
+      ? agricultor.avaliacoes.reduce((total, avaliacao) => total + avaliacao.nota, 0) /
+        agricultor.avaliacoes.length
+      : 0;
 
   return (
     <>
@@ -101,15 +118,20 @@ function AgricultorProfile({
           </span>
         </div>
 
-        {agricultor.realizaEntrega && (
-          <div className="inline-flex items-center gap-1.5 bg-[#149D7F]/15 text-[#149D7F] px-3 py-1.5 rounded-full" style={{ fontSize: '12px', fontWeight: 600 }}>
-            <Truck size={12} />
-            Realiza entrega própria
+        <div className="flex flex-wrap gap-2">
+          {agricultor.realizaEntrega && (
+            <div className="inline-flex items-center gap-1.5 bg-[#149D7F]/15 text-[#149D7F] px-3 py-1.5 rounded-full" style={{ fontSize: '12px', fontWeight: 600 }}>
+              <Truck size={12} />
+              Realiza entrega própria
+            </div>
+          )}
+          <div className="inline-flex items-center gap-1.5 bg-[#F59E0B]/12 text-[#FBBF24] px-3 py-1.5 rounded-full" style={{ fontSize: '12px', fontWeight: 600 }}>
+            <Star size={12} />
+            {agricultor.avaliacoes.length > 0 ? mediaAvaliacoes.toFixed(1).replace('.', ',') : 'Sem notas'}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Contact info */}
       <div className="px-4 pt-4 pb-2">
         <div className="bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-5">
           <p className="text-[#B0B3B8]" style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -121,7 +143,80 @@ function AgricultorProfile({
           </div>
         </div>
 
-        {/* Products */}
+        <div className="flex items-center gap-2 mb-3">
+          <Trophy size={16} className="text-[#149D7F]" />
+          <span className="text-white" style={{ fontSize: '15px', fontWeight: 600 }}>
+            Chamadas publicas ganhas ({agricultor.licitacoesGanhas.length})
+          </span>
+        </div>
+        {agricultor.licitacoesGanhas.length === 0 ? (
+          <p className="text-[#B0B3B8] text-center py-4" style={{ fontSize: '14px' }}>
+            Nenhuma licitação ganha até o momento
+          </p>
+        ) : (
+          agricultor.licitacoesGanhas.map((licitacao) => {
+            const chamada = getChamada(licitacao.chamadaId);
+            const instituicao = getInstituicao(licitacao.instituicaoId);
+            return (
+              <div key={licitacao.id} className="bg-[#1D2226] border border-[#2F3336] rounded-xl p-3.5 mb-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="text-white" style={{ fontSize: '14px', fontWeight: 600 }}>
+                      {chamada?.titulo || 'Chamada finalizada'}
+                    </p>
+                    <p className="text-[#B0B3B8] mt-0.5" style={{ fontSize: '12px' }}>
+                      {instituicao?.nome || 'Instituição'}
+                    </p>
+                  </div>
+                  <p className="text-[#149D7F]" style={{ fontSize: '13px', fontWeight: 700 }}>
+                    {formatCurrency(licitacao.valor)}
+                  </p>
+                </div>
+                <p className="text-[#B0B3B8] mt-2" style={{ fontSize: '11px' }}>
+                  Concluída em {formatDate(licitacao.dataConclusao)}
+                </p>
+              </div>
+            );
+          })
+        )}
+
+        <div className="flex items-center gap-2 mb-3 mt-6">
+          <Star size={16} className="text-[#149D7F]" />
+          <span className="text-white" style={{ fontSize: '15px', fontWeight: 600 }}>
+            Avaliações ({agricultor.avaliacoes.length})
+          </span>
+        </div>
+        {agricultor.avaliacoes.length === 0 ? (
+          <p className="text-[#B0B3B8] text-center py-4" style={{ fontSize: '14px' }}>
+            Este agricultor ainda não recebeu avaliações
+          </p>
+        ) : (
+          agricultor.avaliacoes.map((avaliacao) => {
+            const instituicao = getInstituicao(avaliacao.instituicaoId);
+            return (
+              <div key={avaliacao.id} className="bg-[#1D2226] border border-[#2F3336] rounded-xl p-3.5 mb-2">
+                <div className="flex items-center justify-between gap-3 mb-2">
+                  <div>
+                    <p className="text-white" style={{ fontSize: '13px', fontWeight: 600 }}>
+                      {instituicao?.nome || 'Instituição'}
+                    </p>
+                    <p className="text-[#B0B3B8]" style={{ fontSize: '11px' }}>
+                      {formatDate(avaliacao.data)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1 text-[#FBBF24]" style={{ fontSize: '12px', fontWeight: 700 }}>
+                    <Star size={12} fill="currentColor" />
+                    {avaliacao.nota.toFixed(1).replace('.', ',')}
+                  </div>
+                </div>
+                <p className="text-[#B0B3B8]" style={{ fontSize: '13px' }}>
+                  {avaliacao.comentario}
+                </p>
+              </div>
+            );
+          })
+        )}
+
         <div className="flex items-center gap-2 mb-3">
           <Sprout size={16} className="text-[#149D7F]" />
           <span className="text-white" style={{ fontSize: '15px', fontWeight: 600 }}>
@@ -250,7 +345,7 @@ function InstituicaoProfile({
 // Own profile page (with BottomNav, in MainLayout)
 export function Perfil() {
   const navigate = useNavigate();
-  const { role, currentUserId, getAgricultor, getInstituicao, getChamadasByInstituicao, setRole } =
+  const { role, currentUserId, getAgricultor, getInstituicao, getChamadasByInstituicao, logout } =
     useAppContext();
 
   return (
@@ -283,25 +378,18 @@ export function Perfil() {
           })()
         )}
 
-        {/* Switch role button */}
         <div className="px-4 py-4">
           <div className="h-px bg-[#2F3336] mb-4" />
           <button
             onClick={() => {
-              setRole(role === 'agricultor' ? 'instituicao' : 'agricultor');
+              logout();
+              navigate('/');
             }}
             className="w-full flex items-center justify-center gap-2 border border-[#2F3336] text-[#B0B3B8] rounded-full py-3 active:bg-[#2F3336]"
             style={{ fontSize: '13px', fontWeight: 500 }}
           >
-            <RefreshCw size={14} />
-            Alternar para {role === 'agricultor' ? 'Instituição' : 'Agricultor'}
-          </button>
-          <button
-            onClick={() => navigate('/')}
-            className="w-full text-[#B0B3B8] py-3 mt-1"
-            style={{ fontSize: '13px' }}
-          >
-            Trocar tipo de conta
+            <LogOut size={14} />
+            Logout
           </button>
         </div>
       </div>

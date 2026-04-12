@@ -1,5 +1,6 @@
+import { JSX } from 'react';
 import { useNavigate, Navigate } from 'react-router';
-import { FileText, ChevronRight, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { FileText, ChevronRight, Clock, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Proposta, PropostaStatus } from '../types';
 
@@ -31,6 +32,12 @@ const statusMap: Record<PropostaStatus, { label: string; color: string; bg: stri
     bg: 'bg-[#E74C3C]/15',
     icon: <XCircle size={13} />,
   },
+  chamada_cancelada: {
+    label: 'Chamada cancelada',
+    color: 'text-[#F97316]',
+    bg: 'bg-[#F97316]/15',
+    icon: <Ban size={13} />,
+  },
 };
 
 function PropostaCard({ proposta, chamadaTitulo, instNome }: { proposta: Proposta; chamadaTitulo: string; instNome: string }) {
@@ -38,7 +45,10 @@ function PropostaCard({ proposta, chamadaTitulo, instNome }: { proposta: Propost
   const sc = statusMap[proposta.status];
 
   return (
-    <div className="bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-3">
+    <button
+      onClick={() => navigate(`/propostas/${proposta.id}`)}
+      className="w-full bg-[#1D2226] border border-[#2F3336] rounded-2xl p-4 mb-3 text-left active:border-[#149D7F]/40"
+    >
       <div className="flex items-start justify-between gap-2 mb-2">
         <p className="text-white flex-1 leading-tight" style={{ fontSize: '14px', fontWeight: 600 }}>
           {chamadaTitulo}
@@ -75,14 +85,10 @@ function PropostaCard({ proposta, chamadaTitulo, instNome }: { proposta: Propost
         </div>
       </div>
 
-      <button
-        onClick={() => navigate(`/propostas/${proposta.id}`)}
-        className="w-full border border-[#149D7F] text-[#149D7F] rounded-full py-2 flex items-center justify-center gap-1.5 active:bg-[#149D7F]/10 transition-colors"
-        style={{ fontSize: '13px', fontWeight: 600 }}
-      >
+      <div className="text-[#149D7F] flex items-center justify-center gap-1.5" style={{ fontSize: '13px', fontWeight: 600 }}>
         Ver detalhes <ChevronRight size={14} />
-      </button>
-    </div>
+      </div>
+    </button>
   );
 }
 
