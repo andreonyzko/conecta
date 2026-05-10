@@ -1,11 +1,11 @@
-import { RouterProvider } from 'react-router';
-import { router } from './routes';
+import React from 'react';
 import { AppContextProvider } from './context/AppContext';
+import { AppNavigator } from './navigation/AppNavigator';
 
 export default function App() {
   return (
     <AppContextProvider>
-      <RouterProvider router={router} />
+      <AppNavigator />
     </AppContextProvider>
   );
 }
