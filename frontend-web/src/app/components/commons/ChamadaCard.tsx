@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '../../context/AppContext';
 import { Agricultor, Chamada, Instituicao, ItemChamada, ItemProposta, ProdutoAgricultor, Proposta, PropostaStatus, UserRole } from '../../types';
 import { BRAND_NAME, BRAND_TAGLINE } from '../../config/branding';

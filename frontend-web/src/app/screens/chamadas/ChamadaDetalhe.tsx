@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '../../context/AppContext';
 import { Agricultor, Chamada, Instituicao, ItemChamada, ItemProposta, ProdutoAgricultor, Proposta, PropostaStatus, UserRole } from '../../types';
 import { BRAND_NAME, BRAND_TAGLINE } from '../../config/branding';
@@ -9,7 +9,7 @@ import { logo } from '../../shared/assets';
 import { formatCurrency, formatDate } from '../../shared/formatters';
 import { notify } from '../../shared/feedback';
 import { statusChamada, statusProposta } from '../../shared/status';
-import { Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../../components/ui/ui';
+import { KeyboardAwareScrollView, Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../../components/ui/ui';
 import { NotFound } from '../../components/ui/NotFound';
 import { FinalizarModal } from '../../components/commons/FinalizarModal';
 
@@ -42,7 +42,7 @@ export function ChamadaDetalhe({ id, nav }: { id: string; nav: Nav }) {
   return (
     <View className="flex-1 bg-agro-bg">
       <Header title="Detalhes da Chamada" onBack={nav.back} badge={sc.label} />
-      <ScrollView contentContainerClassName="gap-3 p-4 pb-7">
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3 p-4 pb-7">
         <Text className="mb-1 text-xl font-extrabold text-white">{chamada.titulo}</Text>
         <TouchableOpacity onPress={() => nav.go({ name: 'perfilInstituicao', id: chamada.instituicaoId })}>
           <Text className="text-[13px] font-bold text-agro-green">{instituicao?.nome}</Text>
@@ -61,20 +61,20 @@ export function ChamadaDetalhe({ id, nav }: { id: string; nav: Nav }) {
           </View>
         ))}
         <View className="gap-2.5 rounded-[18px] border border-agro-border bg-agro-panel p-4"><Text className="text-sm leading-5 text-white">{propostas.length} {propostas.length === 1 ? 'proposta recebida' : 'propostas recebidas'}</Text></View>
-      </ScrollView>
-      <View className="gap-2.5 border-t border-agro-border bg-agro-bg p-3.5">
-        {canPropose && <Button onPress={() => nav.go({ name: 'enviarProposta', chamadaId: chamada.id })}>Enviar Proposta</Button>}
+      </KeyboardAwareScrollView>
+      <View className="gap-2.5 border-t border-agro-border bg-agro-bg px-3.5 pb-8 pt-3.5">
+        {canPropose && <Button grow={false} onPress={() => nav.go({ name: 'enviarProposta', chamadaId: chamada.id })}>Enviar Proposta</Button>}
         {ctx.role === 'agricultor' && chamada.status === 'ativa' && allItensAtendidos && <Text className="text-center text-[13px] text-agro-muted">Todos os itens desta chamada ja foram atendidos.</Text>}
         {isOwner && (
           <>
-            <Button onPress={() => nav.go({ name: 'propostasInstituicao', chamadaId: chamada.id })}>Ver Propostas ({propostas.length})</Button>
-            {chamada.status === 'ativa' && allItensAtendidos && vencedores.length > 0 && <Button onPress={() => setShowFinalizar(true)}>Encerrar chamada</Button>}
+            <Button grow={false} onPress={() => nav.go({ name: 'propostasInstituicao', chamadaId: chamada.id })}>Ver Propostas ({propostas.length})</Button>
+            {chamada.status === 'ativa' && allItensAtendidos && vencedores.length > 0 && <Button grow={false} onPress={() => setShowFinalizar(true)}>Encerrar chamada</Button>}
             {chamada.status === 'ativa' && (confirmCancel ? (
               <View className="flex-row items-center gap-2.5">
                 <Button variant="danger" onPress={cancel}>Confirmar</Button>
                 <Button variant="outline" onPress={() => setConfirmCancel(false)}>Cancelar</Button>
               </View>
-            ) : <Button variant="danger" onPress={() => setConfirmCancel(true)}>Cancelar Chamada</Button>)}
+            ) : <Button grow={false} variant="danger" onPress={() => setConfirmCancel(true)}>Cancelar Chamada</Button>)}
           </>
         )}
       </View>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Star } from 'lucide-react-native';
 import { useAppContext } from '../../context/AppContext';
 import { Agricultor, Chamada, Instituicao, ItemChamada, ItemProposta, ProdutoAgricultor, Proposta, PropostaStatus, UserRole } from '../../types';
 import { BRAND_NAME, BRAND_TAGLINE } from '../../config/branding';
@@ -9,7 +10,7 @@ import { logo } from '../../shared/assets';
 import { formatCurrency, formatDate } from '../../shared/formatters';
 import { notify } from '../../shared/feedback';
 import { statusChamada, statusProposta } from '../../shared/status';
-import { Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../ui/ui';
+import { KeyboardAwareScrollView, Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../ui/ui';
 import { NotFound } from '../ui/NotFound';
 
 export function FinalizarModal({
@@ -29,7 +30,7 @@ export function FinalizarModal({
       <View className="flex-1 justify-end bg-black/60">
         <View className="max-h-[88%] overflow-hidden rounded-t-[22px] bg-agro-panel">
           <Header title="Encerrar chamada" subtitle="Avalie os agricultores vencedores" onBack={onClose} />
-          <ScrollView contentContainerClassName="gap-3 p-4 pb-7">
+          <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="gap-3 p-4 pb-7">
             {agricultores.map((a) => {
               const item = items.find((x) => x.agricultorId === a.id) ?? { agricultorId: a.id, nota: 5, comentario: '' };
               return (
@@ -38,7 +39,7 @@ export function FinalizarModal({
                   <View className="flex-row items-center gap-2.5">
                     {[1, 2, 3, 4, 5].map((nota) => (
                       <TouchableOpacity key={nota} onPress={() => setItems((prev) => prev.map((x) => x.agricultorId === a.id ? { ...x, nota } : x))}>
-                        <Icon name="★" color={nota <= item.nota ? C.yellow : C.dim} />
+                        <Star size={24} color={nota <= item.nota ? C.yellow : C.dim} fill={nota <= item.nota ? C.yellow : 'transparent'} />
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -47,7 +48,7 @@ export function FinalizarModal({
               );
             })}
             <Button onPress={() => onConfirm(items)}>Finalizar chamada</Button>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </View>
       </View>
     </Modal>

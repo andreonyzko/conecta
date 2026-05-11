@@ -5,6 +5,7 @@ export { Field } from './Field';
 export { Header } from './Header';
 export { Icon } from './Icon';
 export { InfoCard } from './InfoCard';
+export { KeyboardAwareScrollView } from './KeyboardAwareScrollView';
 export { SectionTitle } from './SectionTitle';
 export { SwitchRow } from './SwitchRow';
 export * from './NotFound';

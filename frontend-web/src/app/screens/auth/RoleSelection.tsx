@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useAppContext } from '../../context/AppContext';
 import { Agricultor, Chamada, Instituicao, ItemChamada, ItemProposta, ProdutoAgricultor, Proposta, PropostaStatus, UserRole } from '../../types';
 import { BRAND_NAME, BRAND_TAGLINE } from '../../config/branding';
@@ -9,7 +9,7 @@ import { logo } from '../../shared/assets';
 import { formatCurrency, formatDate } from '../../shared/formatters';
 import { notify } from '../../shared/feedback';
 import { statusChamada, statusProposta } from '../../shared/status';
-import { Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../../components/ui/ui';
+import { KeyboardAwareScrollView, Badge, Button, Empty, Field, Header, Icon, InfoCard, SectionTitle, SwitchRow } from '../../components/ui/ui';
 import { NotFound } from '../../components/ui/NotFound';
 
 export function RoleSelection({ nav }: { nav: Nav }) {
@@ -44,7 +44,7 @@ export function RoleSelection({ nav }: { nav: Nav }) {
   };
 
   return (
-    <ScrollView className="flex-1 bg-agro-bg" contentContainerClassName="gap-4 px-6 pb-6 pt-9">
+    <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" className="flex-1 bg-agro-bg" contentContainerClassName="gap-4 px-6 pb-6 pt-9">
       <Image source={logo} resizeMode="contain" className="mb-[-4px] h-[120px] w-full" accessibilityLabel={BRAND_NAME} />
       <Text className="mb-3 text-center text-sm text-agro-muted">{BRAND_TAGLINE}</Text>
 
@@ -83,10 +83,10 @@ export function RoleSelection({ nav }: { nav: Nav }) {
           </>
         )}
         <Field label="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" placeholder="seu@email.com" />
-        <Field label="Senha" value={senha} onChangeText={setSenha} placeholder="********" />
+        <Field label="Senha" value={senha} onChangeText={setSenha} placeholder="********" secureTextEntry showSecureTextToggle />
         <Button onPress={submit}>{mode === 'login' ? 'Entrar' : 'Criar conta'}</Button>
       </View>
       <Text className="text-center text-xs text-agro-dim">Use um e-mail existente nos mocks para login, ou crie uma nova conta.</Text>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }

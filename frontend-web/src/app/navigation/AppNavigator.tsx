@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StatusBar, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { useAppContext } from '../context/AppContext';
 import { Route } from './types';
@@ -32,7 +33,7 @@ export function AppNavigator() {
   const showTabs = route.name === 'chamadas' || route.name === 'propostas' || route.name === 'perfil';
 
   return (
-    <SafeAreaView className="flex-1 bg-agro-bg">
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-agro-bg">
       <StatusBar barStyle="light-content" />
       <ExpoStatusBar style="light" />
       <View className="flex-1 bg-agro-bg">
