@@ -1,0 +1,50 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.0.3",
+    "@react-navigation/native": "^7.2.4",
+    "@rn-primitives/checkbox": "^1.4.0",
+    "@rn-primitives/label": "^1.4.0",
+    "@rn-primitives/portal": "^1.4.0",
+    "@rn-primitives/select": "^1.4.0",
+    "@rn-primitives/slot": "^1.4.0",
+    "@rn-primitives/tabs": "^1.4.0",
+    "babel-preset-expo": "^55.0.21",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "expo": "~54.0.33",
+    "expo-constants": "~18.0.13",
+    "expo-linking": "~8.0.12",
+    "expo-router": "~6.0.23",
+    "expo-secure-store": "^55.0.14",
+    "expo-splash-screen": "^55.0.21",
+    "expo-status-bar": "~3.0.9",
+    "nativewind": "^4.2.3",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-reanimated": "^4.3.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "sonner-native": "^0.25.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^3.4.19",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "overrides": {
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
