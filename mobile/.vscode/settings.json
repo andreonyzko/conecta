@@ -1,0 +1,17 @@
+{
+  "claudeCode.useTerminal": true,
+  "tailwindCSS.experimental.classRegex": [
+    ["className=\"([^\"]*)", "([^\"\\s]+)"],
+    ["className={`([^`]*)`}", "([^`\\s]+)"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["clsx\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "tailwindCSS.includeLanguages": {
+    "typescript": "html",
+    "typescriptreact": "html"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
