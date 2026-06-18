@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useState, ReactNode } from 'react';
 import {
   UserRole,
   Agricultor,
@@ -56,7 +56,7 @@ interface AppContextType {
   canAcceptProposta: (propostaId: string) => { canAccept: boolean; blockedProducts: string[] };
 }
 
-const AppContext = createContext<AppContextType | null>(null);
+export const AppContext = createContext<AppContextType | null>(null);
 
 export function AppContextProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -345,8 +345,4 @@ export function AppContextProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAppContext() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useAppContext must be used within AppContextProvider');
-  return ctx;
-}
+export { useAppContext } from './useAppContext';

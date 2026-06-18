@@ -1,0 +1,22 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true
+  },
+  "include": [
+    "nativewind-env.d.ts",
+    "App.tsx",
+    "src/app/App.tsx",
+    "src/app/context/**/*.tsx",
+    "src/app/data/**/*.ts",
+    "src/app/types/**/*.ts",
+    "src/app/config/**/*.tsx"
+  ],
+  "exclude": [
+    "src/app/pages",
+    "src/app/components",
+    "src/app/routes.tsx",
+    "src/app/main.tsx",
+    "vite.config.ts"
+  ]
+}

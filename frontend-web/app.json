@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "AgroConecta",
+    "slug": "agroconecta",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./public/Conecta.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#121212"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./public/Conecta.png"
+    }
+  }
+}
