@@ -1,7 +1,7 @@
 import { UserType } from "./Common";
 
 export interface AuthUser {
-    id: number,
+    id: string,
     type: UserType,
     name: string,
     email: string,

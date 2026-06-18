@@ -1,26 +1,46 @@
-import { View, Image } from "react-native";
+import { View, Image, ScrollView } from "react-native";
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SignUp from "@/components/common/SignUp";
-import SignIn from "@/components/common/SignIn";
+import SignUp from "@/components/common/auth/SignUp";
+import SignIn from "@/components/common/auth/SignIn";
 import { Text } from "@/components/ui/text";
+import clsx from "clsx";
 
 export default function AuthScreen() {
   const [action, setAction] = useState("signin");
 
   return (
-    <View className="flex-1 justify-center items-center">
-      <View className="w-10/12 justify-center">
-        <View className="w-30 h-20">
-          <Image source={require("@/assets/logo-t.png")} className="w-full h-full" resizeMode="stretch"/>
+    <ScrollView>
+      <View className="flex-1 items-center p-10 px-2">
+        <View className="w-8/12 mb-10">
+          <Image
+            source={require("@/assets/logo-t.png")}
+            resizeMode="contain"
+            className="h-[120px] w-full"
+          />
+          <Text className="text-sm text-muted text-center">
+            Conectando agricultores familiares com instituições de ensino
+          </Text>
         </View>
-        <View>
+        <View className="bg-card w-11/12 p-6 rounded-2xl border border-border">
           <Tabs value={action} onValueChange={setAction}>
-            <TabsList>
-              <TabsTrigger value="signin">
+            <TabsList className="w-full flex bg-background mb-2">
+              <TabsTrigger
+                value="signin"
+                className={clsx(
+                  "flex-1 p-2",
+                  action === "signin" && "bg-primary"
+                )}
+              >
                 <Text>Login</Text>
               </TabsTrigger>
-              <TabsTrigger value="signup">
+              <TabsTrigger
+                value="signup"
+                className={clsx(
+                  "flex-1 p-2",
+                  action === "signup" && "bg-primary"
+                )}
+              >
                 <Text>Cadastro</Text>
               </TabsTrigger>
             </TabsList>
@@ -33,6 +53,6 @@ export default function AuthScreen() {
           </Tabs>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }

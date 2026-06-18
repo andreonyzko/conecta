@@ -1,36 +1,50 @@
 import { mockProposals } from "@/data/mock";
-import { getAcceptedCallItems } from "./CallService";
 import { Proposal } from "@/types/Proposal";
 import { ProposalStatus } from "@/types/Common";
+import { callService } from "./CallService";
 
-export const getCallProposals = (callId: number) => mockProposals.filter(p => p.callId === callId);
-export const getFarmerProposals = (farmerId: number) => mockProposals.filter(p => p.farmerId === farmerId);
+class ProposalService {
+  getProposal = (callId: number, proposalId: number) =>
+    mockProposals.find((p) => p.callId === callId && p.id === proposalId);
 
-export function addProposal(proposal: Omit<Proposal, 'id' | 'createdAt'>){
+  getCallProposals = (callId: number) =>
+    mockProposals.filter((p) => p.callId === callId);
+
+  getFarmerProposals = (farmerId: number) =>
+    mockProposals.filter((p) => p.farmerId === farmerId);
+
+  addProposal(proposal: Omit<Proposal, "id" | "createdAt">) {
     const newProposal = {
-        ...proposal,
-        id: Date.now(),
-        createdAt: new Date()
-    }
+      ...proposal,
+      id: Date.now(),
+      createdAt: new Date(),
+    };
 
     mockProposals.push(newProposal);
-}
+  }
 
-export function cancelProposal(id: number){
-    const idx = mockProposals.findIndex(p => p.id === id);
+  cancelProposal(id: number) {
+    const idx = mockProposals.findIndex((p) => p.id === id);
     mockProposals.slice(idx, 1);
-}
+  }
 
-export function updateProposalStatus(id: number, status: ProposalStatus){
-    const proposal = mockProposals.find(p => p.id === id);
-    if(!proposal) throw new Error("Proposta não encontrada");
+  updateProposalStatus(id: number, status: ProposalStatus) {
+    const proposal = mockProposals.find((p) => p.id === id);
+    if (!proposal) throw new Error("Proposta não encontrada");
     proposal.status = status;
+  }
+
+  canAcceptProposal(proposalId: number) {
+    const proposal = mockProposals.find((p) => p.id === proposalId);
+    if (!proposal) throw new Error("Proposta não encontrada.");
+    const acceptedsProducts = new Set(
+      callService.getAcceptedCallItems(proposal.callId)
+    );
+    const blockedProducts = proposal.itens
+      .map((i) => i.product)
+      .filter((i) => acceptedsProducts.has(i));
+    return { canAccept: blockedProducts.length === 0, blockedProducts };
+  }
 }
 
-export function canAcceptProposal(proposalId: number) {
-    const proposal = mockProposals.find(p => p.id === proposalId);
-    if(!proposal) throw new Error("Proposta não encontrada.");
-    const acceptedsProducts = new Set(getAcceptedCallItems(proposal.callId));
-    const blockedProducts = proposal.itens.map(i => i.product).filter(i => acceptedsProducts.has(i));
-    return {canAccept: blockedProducts.length === 0, blockedProducts};
-}
+export const proposalService = new ProposalService();

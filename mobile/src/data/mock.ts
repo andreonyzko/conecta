@@ -210,7 +210,6 @@ export const mockCalls: Call[] = [
     endDate: new Date("2026-04-30"),
     itens: [
       {
-        id: 1,
         product: "Alface",
         category: "Hortaliças",
         amount: 200,
@@ -219,7 +218,6 @@ export const mockCalls: Call[] = [
         referencePrice: 4.5,
       },
       {
-        id: 2,
         product: "Tomate",
         category: "Hortaliças",
         amount: 150,
@@ -228,7 +226,6 @@ export const mockCalls: Call[] = [
         referencePrice: 6.0,
       },
       {
-        id: 3,
         product: "Feijão",
         category: "Leguminosas",
         amount: 300,
@@ -237,7 +234,6 @@ export const mockCalls: Call[] = [
         referencePrice: 7.5,
       },
       {
-        id: 4,
         product: "Mandioca",
         category: "Raízes e Tubérculos",
         amount: 400,
@@ -258,7 +254,6 @@ export const mockCalls: Call[] = [
     endDate: new Date("2026-05-10"),
     itens: [
       {
-        id: 5,
         product: "Abóbora",
         category: "Hortaliças",
         amount: 500,
@@ -267,7 +262,6 @@ export const mockCalls: Call[] = [
         referencePrice: 3.5,
       },
       {
-        id: 6,
         product: "Cenoura",
         category: "Hortaliças",
         amount: 200,
@@ -276,7 +270,6 @@ export const mockCalls: Call[] = [
         referencePrice: 3.8,
       },
       {
-        id: 7,
         product: "Beterraba",
         category: "Hortaliças",
         amount: 150,
@@ -297,7 +290,6 @@ export const mockCalls: Call[] = [
     endDate: new Date("2026-03-31"),
     itens: [
       {
-        id: 8,
         product: "Banana",
         category: "Frutas",
         amount: 600,
@@ -306,7 +298,6 @@ export const mockCalls: Call[] = [
         referencePrice: 3.5,
       },
       {
-        id: 9,
         product: "Mamão",
         category: "Frutas",
         amount: 300,
@@ -327,7 +318,6 @@ export const mockCalls: Call[] = [
     endDate: new Date("2026-05-20"),
     itens: [
       {
-        id: 10,
         product: "Arroz",
         category: "Grãos e Cereais",
         amount: 500,
@@ -336,7 +326,6 @@ export const mockCalls: Call[] = [
         referencePrice: 5.5,
       },
       {
-        id: 11,
         product: "Milho Verde",
         category: "Grãos e Cereais",
         amount: 300,

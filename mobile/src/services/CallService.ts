@@ -2,74 +2,81 @@ import { mockCalls, mockFarmers, mockProposals } from "@/data/mock";
 import { Call } from "@/types/Call";
 import { ClosingReview } from "@/types/ClosingReview";
 
-export const getCall = (id: number) => mockCalls.find((c) => c.id === id);
-export const getInstitutionCalls = (institutionId: number) =>
-  mockCalls.filter((c) => c.institutionId === institutionId);
+class CallService {
+  getCall = (id: number) => mockCalls.find((c) => c.id === id);
 
-export function addCall(call: Omit<Call, "id">) {
-  const id = Date.now();
-  mockCalls.push({ id, ...call });
-}
+  getAll = () => mockCalls;
 
-export function getAcceptedCallItems(callId: number) {
-  const normalized = new Set<string>();
+  getInstitutionCalls = (institutionId: number) =>
+    mockCalls.filter((c) => c.institutionId === institutionId);
 
-  mockProposals
-    .filter((p) => p.callId === callId && p.status === "accepted")
-    .forEach((p) => p.itens.forEach((i) => normalized.add(i.product)));
+  addCall(call: Omit<Call, "id">) {
+    const id = Date.now();
+    mockCalls.push({ id, ...call });
+  }
 
-  return Array.from(normalized);
-}
+  getAcceptedCallItems(callId: number) {
+    const normalized = new Set<string>();
 
-export function getAvailableCallItems(callId: number) {
-  const call = mockCalls.find((c) => c.id === callId);
-  if (!call) return [];
+    mockProposals
+      .filter((p) => p.callId === callId && p.status === "accepted")
+      .forEach((p) => p.itens.forEach((i) => normalized.add(i.product)));
 
-  const accepteds = new Set(getAcceptedCallItems(callId));
-  return call.itens.filter((i) => !accepteds.has(i.product));
-}
+    return Array.from(normalized);
+  }
 
-export function cancelCall(id: number) {
-  const call = mockCalls.find((c) => c.id === id);
-  if (!call) throw new Error("Chamada não encontrada.");
-  call.status = "canceled";
-  mockProposals
-    .filter((p) => p.callId === id)
-    .forEach((p) => (p.status = "canceled"));
-}
+  getAvailableCallItems(callId: number) {
+    const call = mockCalls.find((c) => c.id === callId);
+    if (!call) return [];
 
-export function closeCall(id: number, reviews: ClosingReview[]) {
-  const call = mockCalls.find((c) => c.id === id);
-  if (!call) throw new Error("Chamada não encontrada");
+    const accepteds = new Set(this.getAcceptedCallItems(callId));
+    return call.itens.filter((i) => !accepteds.has(i.product));
+  }
 
-  call.status = "closed";
-  const acceptedProposals = mockProposals.filter(
-    (p) => p.callId === id && p.status === "accepted"
-  );
+  cancelCall(id: number) {
+    const call = mockCalls.find((c) => c.id === id);
+    if (!call) throw new Error("Chamada não encontrada.");
+    call.status = "canceled";
+    mockProposals
+      .filter((p) => p.callId === id)
+      .forEach((p) => (p.status = "canceled"));
+  }
 
-  acceptedProposals.forEach((p) => {
-    const farmer = mockFarmers.find((f) => f.id === p.farmerId);
-    if (!farmer) return;
+  closeCall(id: number, reviews: ClosingReview[]) {
+    const call = mockCalls.find((c) => c.id === id);
+    if (!call) throw new Error("Chamada não encontrada");
 
-    farmer.bidswon.push({
-      id: Date.now(),
-      callId: id,
-      institutionId: call.institutionId,
-      conclusionDate: new Date(),
-      value: p.totalValue,
+    call.status = "closed";
+    const acceptedProposals = mockProposals.filter(
+      (p) => p.callId === id && p.status === "accepted"
+    );
+
+    acceptedProposals.forEach((p) => {
+      const farmer = mockFarmers.find((f) => f.id === p.farmerId);
+      if (!farmer) return;
+
+      farmer.bidswon.push({
+        id: Date.now(),
+        callId: id,
+        institutionId: call.institutionId,
+        conclusionDate: new Date(),
+        value: p.totalValue,
+      });
     });
-  });
 
-  reviews.forEach((r) => {
-    const farmer = mockFarmers.find((f) => f.id === r.farmerId);
-    if (!farmer) return;
+    reviews.forEach((r) => {
+      const farmer = mockFarmers.find((f) => f.id === r.farmerId);
+      if (!farmer) return;
 
-    farmer.reviews.push({
-      id: Date.now(),
-      institutionId: call.institutionId,
-      date: new Date(),
-      grade: r.grade,
-      comment: r.comment,
+      farmer.reviews.push({
+        id: Date.now(),
+        institutionId: call.institutionId,
+        date: new Date(),
+        grade: r.grade,
+        comment: r.comment,
+      });
     });
-  });
+  }
 }
+
+export const callService = new CallService();

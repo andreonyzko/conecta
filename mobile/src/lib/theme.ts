@@ -1,116 +1,51 @@
-import { DarkTheme, DefaultTheme, type Theme } from "@react-navigation/native";
+import { DefaultTheme, type Theme } from "@react-navigation/native";
 
 export const THEME = {
-  light: {
-    background: "hsl(0 0% 7%)",
-    foreground: "hsl(0 0% 100%)",
-
-    card: "hsl(200 14% 13%)",
-    cardForeground: "hsl(0 0% 100%)",
-
-    popover: "hsl(200 14% 13%)",
-    popoverForeground: "hsl(0 0% 100%)",
-
-    primary: "hsl(166 77% 35%)",
-    primaryForeground: "hsl(0 0% 100%)",
-
-    secondary: "hsl(200 10% 18%)",
-    secondaryForeground: "hsl(0 0% 100%)",
-
-    muted: "hsl(200 10% 18%)",
-    mutedForeground: "hsl(210 6% 72%)",
-
-    accent: "hsl(200 10% 18%)",
-    accentForeground: "hsl(0 0% 100%)",
-
-    destructive: "hsl(6 78% 57%)",
-    destructiveForeground: "hsl(0 0% 100%)",
-
-    border: "hsl(210 7% 20%)",
-    input: "hsl(210 7% 20%)",
-    ring: "hsl(166 77% 35%)",
-
-    radius: "0.75rem",
-
-    chart1: "hsl(166 77% 35%)",
-    chart2: "hsl(24 95% 53%)",
-    chart3: "hsl(6 78% 57%)",
-    chart4: "hsl(200 10% 18%)",
-    chart5: "hsl(210 6% 72%)",
-
-    success: "hsl(166 77% 35%)",
-    successForeground: "hsl(0 0% 100%)",
-
-    warning: "hsl(24 95% 53%)",
-    warningForeground: "hsl(0 0% 100%)",
-  },
-
-  dark: {
-    background: "hsl(0 0% 7%)",
-    foreground: "hsl(0 0% 100%)",
-
-    card: "hsl(200 14% 13%)",
-    cardForeground: "hsl(0 0% 100%)",
-
-    popover: "hsl(200 14% 13%)",
-    popoverForeground: "hsl(0 0% 100%)",
-
-    primary: "hsl(166 77% 35%)",
-    primaryForeground: "hsl(0 0% 100%)",
-
-    secondary: "hsl(200 10% 18%)",
-    secondaryForeground: "hsl(0 0% 100%)",
-
-    muted: "hsl(200 10% 18%)",
-    mutedForeground: "hsl(210 6% 72%)",
-
-    accent: "hsl(200 10% 18%)",
-    accentForeground: "hsl(0 0% 100%)",
-
-    destructive: "hsl(6 78% 57%)",
-    destructiveForeground: "hsl(0 0% 100%)",
-
-    border: "hsl(210 7% 20%)",
-    input: "hsl(210 7% 20%)",
-    ring: "hsl(166 77% 35%)",
-
-    radius: "0.75rem",
-
-    chart1: "hsl(166 77% 35%)",
-    chart2: "hsl(24 95% 53%)",
-    chart3: "hsl(6 78% 57%)",
-    chart4: "hsl(200 10% 18%)",
-    chart5: "hsl(210 6% 72%)",
-
-    success: "hsl(166 77% 35%)",
-    successForeground: "hsl(0 0% 100%)",
-
-    warning: "hsl(24 95% 53%)",
-    warningForeground: "hsl(0 0% 100%)",
-  },
+  background: '#121212',
+  foreground: '#FFFFFF',
+  
+  card: '#1D2226',
+  cardForeground: '#FFFFFF',
+  popover: '#1D2226',
+  popoverForeground: '#FFFFFF',
+  
+  primary: '#149D7F',
+  primaryForeground: '#FFFFFF',
+  
+  secondary: '#242A2F',
+  secondaryForeground: '#FFFFFF',
+  destructive: '#E74C3C',
+  destructiveForeground: '#FFFFFF',
+  warning: '#FBBF24',
+  warningForeground: '#FFFFFF',
+  success: '#149D7F',
+  successForeground: '#FFFFFF',
+  
+  border: '#2F3336',
+  input: '#2F3336',
+  muted: '#B0B3B8',
+  mutedForeground: '#6F767E',
+  accent: '#6F767E',
+  accentForeground: '#FFFFFF',
+  
+  chart1: '#149D7F',
+  chart2: '#F97316',
+  chart3: '#E74C3C',
+  chart4: '#2F3336',
+  chart5: '#B0B3B8',
+  
+  radius: '0.75rem',    // 12px (padrão)
 };
 
-export const NAV_THEME: Record<"light" | "dark", Theme> = {
-  light: {
-    ...DefaultTheme,
-    colors: {
-      background: THEME.light.background,
-      border: THEME.light.border,
-      card: THEME.light.card,
-      notification: THEME.light.destructive,
-      primary: THEME.light.primary,
-      text: THEME.light.foreground,
-    },
-  },
-  dark: {
-    ...DarkTheme,
-    colors: {
-      background: THEME.dark.background,
-      border: THEME.dark.border,
-      card: THEME.dark.card,
-      notification: THEME.dark.destructive,
-      primary: THEME.dark.primary,
-      text: THEME.dark.foreground,
-    },
+// Para React Navigation
+export const NAV_THEME: Theme = {
+  ...DefaultTheme,
+  colors: {
+    background: THEME.background,
+    border: THEME.border,
+    card: THEME.card,
+    notification: THEME.destructive,
+    primary: THEME.primary,
+    text: THEME.foreground,
   },
 };

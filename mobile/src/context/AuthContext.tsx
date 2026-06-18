@@ -7,31 +7,39 @@ import {
   useState,
 } from "react";
 import * as SecureStore from "expo-secure-store";
+import { router } from "expo-router"
+import { authService } from "@/services/AuthService";
 
 interface AuthContextType {
   user: AuthUser | undefined;
   isAuthenticated: boolean;
   isLoading: boolean;
-  signIn(user: AuthUser): Promise<void>;
+  login(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+
   const [user, setUser] = useState<AuthUser | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isAuthenticated = !!user;
 
-  async function signIn(user: AuthUser) {
+  async function login(email: string, password: string) {
+    const {user, token} = await authService.login(email, password);
     setUser(user);
     await SecureStore.setItemAsync("auth_user", JSON.stringify(user));
+    await SecureStore.setItemAsync("token", token);
+    router.replace("/");
   }
 
   async function signOut() {
     setUser(undefined);
     await SecureStore.deleteItemAsync("auth_user");
+    await SecureStore.deleteItemAsync("token");
+    router.replace("/");
   }
 
   useEffect(() => {
@@ -50,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, signOut }}>
       {children}
     </AuthContext.Provider>
   );
