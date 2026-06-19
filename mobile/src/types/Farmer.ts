@@ -3,12 +3,13 @@ import { BidWon } from "./BidWon";
 import { FarmerProduct } from "./FarmerProduct";
 
 export interface Farmer {
-  id: number;
+  id: string;
   name: string;
   cpf: string;
   caf: string;
   phone: string;
   email: string;
+  delivery: boolean;
   products: FarmerProduct[];
   reviews: FarmerReview[];
   bidswon: BidWon[];

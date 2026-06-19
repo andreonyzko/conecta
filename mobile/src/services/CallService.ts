@@ -1,81 +1,89 @@
-import { mockCalls, mockFarmers, mockProposals } from "@/data/mock";
+import { api } from "@/lib/api";
 import { Call } from "@/types/Call";
+import { CallItem } from "@/types/CallItem";
 import { ClosingReview } from "@/types/ClosingReview";
+import { toCall, toCallItem } from "@/lib/mappers";
+import {
+  CallBackResponse,
+  CallItemBackResponse,
+  CreateCallDTO,
+  EndCallDTO,
+  ItemChamadaComStatus,
+} from "@/types/Backend";
+import { unitLabel, frequencyLabel } from "@/utils/options";
+
+export type NewCallInput = {
+  title: string;
+  description?: string;
+  startDate: Date;
+  endDate: Date;
+  itens: CallItem[];
+};
 
 class CallService {
-  getCall = (id: number) => mockCalls.find((c) => c.id === id);
-
-  getAll = () => mockCalls;
-
-  getInstitutionCalls = (institutionId: number) =>
-    mockCalls.filter((c) => c.institutionId === institutionId);
-
-  addCall(call: Omit<Call, "id">) {
-    const id = Date.now();
-    mockCalls.push({ id, ...call });
+  async getAll(): Promise<Call[]> {
+    const { data } = await api.get<CallBackResponse[]>("/chamadas");
+    return data.map(toCall);
   }
 
-  getAcceptedCallItems(callId: number) {
-    const normalized = new Set<string>();
-
-    mockProposals
-      .filter((p) => p.callId === callId && p.status === "accepted")
-      .forEach((p) => p.itens.forEach((i) => normalized.add(i.product)));
-
-    return Array.from(normalized);
+  async getCall(id: string): Promise<Call> {
+    const { data } = await api.get<CallBackResponse>(`/chamadas/${id}`);
+    return toCall(data);
   }
 
-  getAvailableCallItems(callId: number) {
-    const call = mockCalls.find((c) => c.id === callId);
-    if (!call) return [];
-
-    const accepteds = new Set(this.getAcceptedCallItems(callId));
-    return call.itens.filter((i) => !accepteds.has(i.product));
+  async getInstitutionCalls(institutionId: string): Promise<Call[]> {
+    const { data } = await api.get<CallBackResponse[]>("/chamadas", {
+      params: { instituicaoId: institutionId },
+    });
+    return data.map(toCall);
   }
 
-  cancelCall(id: number) {
-    const call = mockCalls.find((c) => c.id === id);
-    if (!call) throw new Error("Chamada não encontrada.");
-    call.status = "canceled";
-    mockProposals
-      .filter((p) => p.callId === id)
-      .forEach((p) => (p.status = "canceled"));
+  async addCall(input: NewCallInput): Promise<Call> {
+    const dto: CreateCallDTO = {
+      titulo: input.title,
+      descricao: input.description ?? "",
+      dataInicio: input.startDate.toISOString().split("T")[0],
+      dataFim: input.endDate.toISOString().split("T")[0],
+      itens: input.itens.map((i) => ({
+        produto: i.product,
+        categoria: i.category,
+        quantidade: i.amount,
+        unidade: unitLabel(i.unity),
+        frequencia: frequencyLabel(i.frequency),
+        precoReferencia: i.referencePrice,
+      })),
+    };
+    const { data } = await api.post<CallBackResponse>("/chamadas", dto);
+    return toCall(data);
   }
 
-  closeCall(id: number, reviews: ClosingReview[]) {
-    const call = mockCalls.find((c) => c.id === id);
-    if (!call) throw new Error("Chamada não encontrada");
+  async cancelCall(id: string): Promise<void> {
+    await api.put(`/chamadas/${id}/cancelar`);
+  }
 
-    call.status = "closed";
-    const acceptedProposals = mockProposals.filter(
-      (p) => p.callId === id && p.status === "accepted"
+  async closeCall(id: string, reviews: ClosingReview[]): Promise<void> {
+    const dto: EndCallDTO = {
+      avaliacoes: reviews.map((r) => ({
+        agricultorId: r.farmerId,
+        nota: r.grade,
+        comentario: r.comment,
+      })),
+    };
+    await api.put(`/chamadas/${id}/encerrar`, dto);
+  }
+
+  async getItensStatus(id: string): Promise<ItemChamadaComStatus[]> {
+    const { data } = await api.get<ItemChamadaComStatus[]>(
+      `/chamadas/${id}/itens-status`
     );
+    return data;
+  }
 
-    acceptedProposals.forEach((p) => {
-      const farmer = mockFarmers.find((f) => f.id === p.farmerId);
-      if (!farmer) return;
-
-      farmer.bidswon.push({
-        id: Date.now(),
-        callId: id,
-        institutionId: call.institutionId,
-        conclusionDate: new Date(),
-        value: p.totalValue,
-      });
-    });
-
-    reviews.forEach((r) => {
-      const farmer = mockFarmers.find((f) => f.id === r.farmerId);
-      if (!farmer) return;
-
-      farmer.reviews.push({
-        id: Date.now(),
-        institutionId: call.institutionId,
-        date: new Date(),
-        grade: r.grade,
-        comment: r.comment,
-      });
-    });
+  async getAvailableCallItems(id: string): Promise<CallItem[]> {
+    const { data } = await api.get<CallItemBackResponse[]>(
+      `/chamadas/${id}/itens-disponiveis`
+    );
+    return data.map(toCallItem);
   }
 }
 

@@ -1,5 +1,5 @@
-import React from "react";
-import { View } from "react-native";
+import React, { useState } from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { Text } from "../../ui/text";
@@ -23,6 +23,7 @@ type LoginFormData = z.infer<typeof loginFormSchema>;
 
 export default function SignIn() {
   const { login } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
   const { control, handleSubmit } = useForm<LoginFormData>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -32,9 +33,19 @@ export default function SignIn() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
+    setSubmitting(true);
     try {
-      await login(data.email, data.email);
-    } catch (_) {}
+      await login(data.email, data.password);
+    } catch (e: any) {
+      Alert.alert(
+        "Erro ao entrar",
+        e?.response?.data?.message ??
+          e?.message ??
+          "Não foi possível fazer login. Verifique suas credenciais e a conexão."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -52,9 +63,19 @@ export default function SignIn() {
         formControl={control}
         secureTextEntry
       />
-      <Button className="flex gap-1" onPress={handleSubmit(onSubmit)}>
-        <Text className="text-white">Entrar</Text>
-        <ChevronRight size={15} color="white" />
+      <Button
+        className="flex gap-1"
+        disabled={submitting}
+        onPress={handleSubmit(onSubmit)}
+      >
+        {submitting ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <>
+            <Text className="text-white">Entrar</Text>
+            <ChevronRight size={15} color="white" />
+          </>
+        )}
       </Button>
     </View>
   );

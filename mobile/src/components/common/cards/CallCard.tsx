@@ -1,7 +1,6 @@
 import { Call } from "@/types/Call";
 import { View } from "react-native";
 import { Text } from "../../ui/text";
-import { mockInstitutions } from "@/data/mock";
 import { THEME } from "@/lib/theme";
 import { Link } from "expo-router";
 import { Badge } from "../../ui/badge";
@@ -24,10 +23,7 @@ export default function CallCard({ call }: CallCardProps) {
             <View className="flex-1">
               <Text className="text-sm font-semibold">{call.title}</Text>
               <Text className="text-xs text-muted">
-                {
-                  mockInstitutions.find((i) => i.id === call.institutionId)
-                    ?.name
-                }
+                {call.institutionName}
               </Text>
             </View>
           </View>

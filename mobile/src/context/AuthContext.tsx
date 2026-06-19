@@ -8,13 +8,14 @@ import {
 } from "react";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router"
-import { authService } from "@/services/AuthService";
+import { authService, RegisterData } from "@/services/AuthService";
 
 interface AuthContextType {
   user: AuthUser | undefined;
   isAuthenticated: boolean;
   isLoading: boolean;
   login(email: string, password: string): Promise<void>;
+  signup(data: RegisterData): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -29,6 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     const {user, token} = await authService.login(email, password);
+    setUser(user);
+    await SecureStore.setItemAsync("auth_user", JSON.stringify(user));
+    await SecureStore.setItemAsync("token", token);
+    router.replace("/");
+  }
+
+  async function signup(data: RegisterData) {
+    const { user, token } = await authService.signup(data);
     setUser(user);
     await SecureStore.setItemAsync("auth_user", JSON.stringify(user));
     await SecureStore.setItemAsync("token", token);
@@ -58,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, signOut }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, signup, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,16 +1,17 @@
-import { View } from "react-native";
-import React from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
+import React, { useState } from "react";
 import InputField from "../form/InputField";
 import { Button } from "../../ui/button";
 import { Text } from "../../ui/text";
 import z from "zod";
 import { PHONE_REGEX } from "@/utils/regex";
 import { cpf, cnpj } from "cpf-cnpj-validator";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PhoneField from "../form/PhoneField";
 import CpfCNPJField from "../form/CpfCNPJField";
 import { ChevronRight } from "lucide-react-native";
+import { useAuth } from "@/context/AuthContext";
 
 const signUpFarmerFormSchema = z
   .object({
@@ -55,6 +56,8 @@ const signUpFarmerFormSchema = z
 type SignUpFarmerFormData = z.infer<typeof signUpFarmerFormSchema>;
 
 export default function SignUpFarmer() {
+  const { signup } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
   const { control, handleSubmit } = useForm<SignUpFarmerFormData>({
     resolver: zodResolver(signUpFarmerFormSchema),
     defaultValues: {
@@ -67,6 +70,28 @@ export default function SignUpFarmer() {
       confirmPassword: "",
     },
   });
+
+  const onSubmit = async (data: SignUpFarmerFormData) => {
+    setSubmitting(true);
+    try {
+      await signup({
+        userType: "farmer",
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        cpfCnpj: data.cpf_cnpj,
+        caf: data.caf,
+      });
+    } catch (e: any) {
+      Alert.alert(
+        "Erro no cadastro",
+        e?.response?.data?.message ?? e?.message ?? "Não foi possível cadastrar"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <View className="flex gap-5">
@@ -107,9 +132,19 @@ export default function SignUpFarmer() {
         placeholder="******"
         secureTextEntry
       />
-      <Button className="flex gap-1" onPress={handleSubmit(() => {})}>
-        <Text className="text-white">Criar Conta</Text>
-        <ChevronRight size={15} color="white" />
+      <Button
+        className="flex gap-1"
+        disabled={submitting}
+        onPress={handleSubmit(onSubmit)}
+      >
+        {submitting ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <>
+            <Text className="text-white">Criar Conta</Text>
+            <ChevronRight size={15} color="white" />
+          </>
+        )}
       </Button>
     </View>
   );

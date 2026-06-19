@@ -42,9 +42,16 @@ export class ChamadaController {
     return this.chamadaService.findById(id);
   }
 
+  @Public()
+  @Get(':id/itens-status')
+  @ApiOperation({ summary: 'Itens da chamada com quantidade atendida/restante' })
+  itensStatus(@Param('id') id: string) {
+    return this.chamadaService.getItensComStatus(id);
+  }
+
   @Get(':id/itens-disponiveis')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Itens da chamada ainda nao aceitos em nenhuma proposta' })
+  @ApiOperation({ summary: 'Itens da chamada que ainda tem saldo a atender' })
   itensDisponiveis(@Param('id') id: string) {
     return this.chamadaService.getItensDisponiveis(id);
   }

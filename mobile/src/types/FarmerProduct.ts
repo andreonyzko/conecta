@@ -1,7 +1,7 @@
 import { Months } from "./Common";
 
 export interface FarmerProduct {
-  id: number;
+  id: string;
   name: string;
   category: string;
   monthlyCapacity: number;

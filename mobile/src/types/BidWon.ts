@@ -1,7 +1,7 @@
 export interface BidWon {
-  id: number;
-  callId: number;
-  institutionId: number;
+  id: string;
+  callId: string;
+  institutionId: string;
   value: number;
   conclusionDate: Date;
 }

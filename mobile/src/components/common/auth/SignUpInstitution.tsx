@@ -1,5 +1,5 @@
-import { View } from "react-native";
-import React from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
+import React, { useState } from "react";
 import InputField from "../form/InputField";
 import { Button } from "../../ui/button";
 import { Text } from "../../ui/text";
@@ -12,6 +12,7 @@ import PhoneField from "../form/PhoneField";
 import CNPJField from "../form/CNPJField";
 import NumberField from "../form/NumberField";
 import { ChevronRight } from "lucide-react-native";
+import { useAuth } from "@/context/AuthContext";
 
 const signUpInstitutionSchema = z
   .object({
@@ -55,9 +56,16 @@ const signUpInstitutionSchema = z
   });
 
 type SignUpInstitutionFormData = z.input<typeof signUpInstitutionSchema>;
+type SignUpInstitutionFormOutput = z.output<typeof signUpInstitutionSchema>;
 
 export default function SignUpInstitution() {
-  const { control, handleSubmit } = useForm<SignUpInstitutionFormData>({
+  const { signup } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { control, handleSubmit } = useForm<
+    SignUpInstitutionFormData,
+    any,
+    SignUpInstitutionFormOutput
+  >({
     resolver: zodResolver(signUpInstitutionSchema),
     defaultValues: {
       name: "",
@@ -69,6 +77,28 @@ export default function SignUpInstitution() {
       confirmPassword: "",
     },
   });
+
+  const onSubmit = async (data: SignUpInstitutionFormOutput) => {
+    setSubmitting(true);
+    try {
+      await signup({
+        userType: "institution",
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        cpfCnpj: data.cnpj,
+        studentsAmount: data.students,
+      });
+    } catch (e: any) {
+      Alert.alert(
+        "Erro no cadastro",
+        e?.response?.data?.message ?? e?.message ?? "Não foi possível cadastrar"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <View className="flex gap-5">
@@ -100,17 +130,29 @@ export default function SignUpInstitution() {
         name="password"
         label="Senha"
         placeholder="******"
+        secureTextEntry
       />
       <InputField
         formControl={control}
         name="confirmPassword"
         label="Confirmar Senha"
         placeholder="******"
+        secureTextEntry
       />
 
-      <Button className="flex gap-1" onPress={handleSubmit(() => {})}>
-        <Text className="text-white">Criar Conta</Text>
-        <ChevronRight size={15} color="white" />
+      <Button
+        className="flex gap-1"
+        disabled={submitting}
+        onPress={handleSubmit(onSubmit)}
+      >
+        {submitting ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <>
+            <Text className="text-white">Criar Conta</Text>
+            <ChevronRight size={15} color="white" />
+          </>
+        )}
       </Button>
     </View>
   );

@@ -17,3 +17,20 @@ export function produtosBloqueados(
     .map((item) => item.produto)
     .filter((produto) => aceitos.has(normalizeProduto(produto)));
 }
+
+/**
+ * Soma a quantidade ja atendida por produto (normalizado) a partir das propostas aceitas.
+ * Usado para a regra de fornecimento parcial (quantidade, nao apenas presenca do produto).
+ */
+export function quantidadeAtendidaPorProduto(
+  propostasAceitas: { itens: { produto: string; quantidade: number }[] }[],
+): Map<string, number> {
+  const mapa = new Map<string, number>();
+  for (const proposta of propostasAceitas) {
+    for (const item of proposta.itens) {
+      const key = normalizeProduto(item.produto);
+      mapa.set(key, (mapa.get(key) ?? 0) + item.quantidade);
+    }
+  }
+  return mapa;
+}

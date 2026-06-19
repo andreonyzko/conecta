@@ -10,7 +10,7 @@ export default function InstitutionCallsRoute() {
   if (
     !user ||
     user.type !== "institution" ||
-    user.id !== Number(institutionId)
+    user.id !== institutionId
   ) {
     return <Redirect href="/calls" />;
   }

@@ -1,4 +1,3 @@
-import { mockFarmers, mockInstitutions } from "@/data/mock";
 import { api } from "@/lib/api";
 import { AuthUser } from "@/types/AuthUser";
 import { UserType } from "@/types/Common";
@@ -11,7 +10,7 @@ import {
 } from "@/types/Backend";
 import { jwtDecode } from "jwt-decode";
 
-interface RegisterData {
+export interface RegisterData {
   userType: UserType;
   name: string;
   email: string;
@@ -58,14 +57,14 @@ class AuthService {
 
 type ResponseData = {
   perfil: FarmerBackResponse | InstitutionBackResponse;
-  acessToken: string;
+  accessToken: string;
 };
 
 const convertResponse = ({
   perfil,
-  acessToken,
+  accessToken,
 }: ResponseData): { user: AuthUser; token: string } => {
-  const decodedToken = jwtDecode<JWTPayLoad>(acessToken);
+  const decodedToken = jwtDecode<JWTPayLoad>(accessToken);
 
   return {
     user: {
@@ -74,7 +73,7 @@ const convertResponse = ({
       name: perfil.nome,
       type: decodedToken.role == "agricultor" ? "farmer" : "institution",
     },
-    token: acessToken,
+    token: accessToken,
   };
 };
 

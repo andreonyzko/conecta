@@ -23,3 +23,16 @@ export const FREQUENCY_OPTIONS: FrequencyOptionType[] = [
     {value: "monthly", label: "Mensal"},
     {value: "bimonthly", label: "Bimestral"}
 ]
+
+export const MONTHS_OPTIONS = [
+    "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+    "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+] as const;
+
+// Converte o "value" das opcoes para o label legivel (envia ao backend de forma consistente
+// com os dados de seed). Se ja for um label conhecido, retorna inalterado.
+export const unitLabel = (value: string) =>
+    UNITS_OPTIONS.find((o) => o.value === value)?.label ?? value;
+
+export const frequencyLabel = (value: string) =>
+    FREQUENCY_OPTIONS.find((o) => o.value === value)?.label ?? value;

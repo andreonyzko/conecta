@@ -43,6 +43,14 @@ const dataSourceOptions: DataSourceOptions = databaseUrl
       entities,
       synchronize: !isProd,
       logging: false,
+      // Evita que conexoes mortas (ex.: Neon suspenso) deixem as queries penduradas.
+      extra: {
+        max: 5,
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 10000,
+        query_timeout: 15000,
+        statement_timeout: 15000,
+      },
     }
   : {
       // SQLite em WebAssembly (sql.js): 100% JavaScript, sem build nativo.

@@ -3,8 +3,7 @@ import React from "react";
 import { Proposal } from "@/types/Proposal";
 import { CircleCheck, Truck, User } from "lucide-react-native";
 import { THEME } from "@/lib/theme";
-import { farmerService } from "@/services/FarmerService";
-import { Link, Redirect } from "expo-router";
+import { Link } from "expo-router";
 import { Text } from "@/components/ui/text";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
@@ -14,10 +13,6 @@ type ProposalCardProps = {
 };
 
 export default function ProposalCard({ proposal }: ProposalCardProps) {
-  const farmer = farmerService.getFarmer(proposal.id);
-
-  if (!farmer) return <Redirect href="/" />;
-
   return (
     <Link href={`/calls/${proposal.callId}/proposals/${proposal.id}`} asChild>
       <Pressable>
@@ -28,7 +23,9 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                 <User color={THEME.muted} />
               </View>
               <View className="flex-1">
-                <Text className="text-sm font-semibold">{farmer.name}</Text>
+                <Text className="text-sm font-semibold">
+                  {proposal.farmerName ?? "Agricultor"}
+                </Text>
                 <Text
                   className={clsx(
                     "text-xs",

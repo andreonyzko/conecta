@@ -8,7 +8,7 @@ import {
 import { PropostaRepository } from '../repositories/PropostaRepository';
 import { ChamadaRepository } from '../repositories/ChamadaRepository';
 import { JWTPayload } from '../helpers/tokenHelper';
-import { produtosBloqueados } from '../helpers/produtos';
+import { normalizeProduto, quantidadeAtendidaPorProduto } from '../helpers/produtos';
 import { CreatePropostaDto } from '../dto/proposta/create-proposta.dto';
 
 function hoje(): string {
@@ -64,8 +64,9 @@ export class PropostaService {
   }
 
   /**
-   * Regra: so aceita a proposta se nenhum dos seus produtos ja foi aceito em
-   * outra proposta da mesma chamada.
+   * Regra (por quantidade): so bloqueia o item se a quantidade pedida na chamada
+   * ja foi TOTALMENTE atendida por outras propostas aceitas. Permite fornecimento
+   * parcial (ex.: pedido 100kg, aceitos 50kg -> outro agricultor pode fornecer o restante).
    */
   async aceitar(id: string, user: JWTPayload) {
     const proposta = await this.garantirDonaDaChamada(id, user);
@@ -73,20 +74,27 @@ export class PropostaService {
       throw new BadRequestException('Apenas propostas pendentes podem ser aceitas');
     }
 
+    const chamada = await ChamadaRepository.findByIdComItens(proposta.chamadaId);
     const aceitas = await PropostaRepository.findAceitasDaChamada(proposta.chamadaId);
-    const produtosAceitos: string[] = [];
-    for (const outra of aceitas) {
-      if (outra.id === proposta.id) continue;
-      for (const item of outra.itens) {
-        produtosAceitos.push(item.produto);
+    const atendido = quantidadeAtendidaPorProduto(
+      aceitas.filter((p) => p.id !== proposta.id),
+    );
+
+    const bloqueados: string[] = [];
+    for (const item of proposta.itens) {
+      const itemChamada = chamada?.itens.find(
+        (ci) => normalizeProduto(ci.produto) === normalizeProduto(item.produto),
+      );
+      if (!itemChamada) continue;
+      const jaAtendido = atendido.get(normalizeProduto(item.produto)) ?? 0;
+      if (jaAtendido >= itemChamada.quantidade) {
+        bloqueados.push(item.produto);
       }
     }
 
-    const bloqueados = produtosBloqueados(proposta.itens, produtosAceitos);
-
     if (bloqueados.length > 0) {
       throw new BadRequestException(
-        `Produtos ja aceitos em outra proposta desta chamada: ${bloqueados.join(', ')}`,
+        `Produtos com quantidade ja totalmente atendida nesta chamada: ${bloqueados.join(', ')}`,
       );
     }
 

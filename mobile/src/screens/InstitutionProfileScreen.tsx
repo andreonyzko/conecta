@@ -1,9 +1,11 @@
-import { View } from "react-native";
+import { RefreshControl, ScrollView, View } from "react-native";
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useRoute } from "@react-navigation/native";
 import { Text } from "@/components/ui/text";
+import Loading from "@/components/common/layout/Loading";
+import ErrorBox from "@/components/common/layout/ErrorBox";
 import { institutionService } from "@/services/InstitutionService";
 import {
   CircleCheckBig,
@@ -18,29 +20,45 @@ import { Badge } from "@/components/ui/badge";
 import { callService } from "@/services/CallService";
 import ResumedCallCard from "@/components/common/cards/ResumedCallCard";
 import { Separator } from "@/components/ui/separator";
+import { useAsync } from "@/lib/useAsync";
 
 export default function InstitutionProfileScreen() {
   const { user, signOut } = useAuth();
-
   const route = useRoute();
-  let { institutionId } = route.params as {
-    institutionId: number;
-  };
+  const { institutionId } = route.params as { institutionId: string };
 
-  institutionId = Number(institutionId);
+  const { data, loading, error, reload } = useAsync(async () => {
+    const [institution, calls] = await Promise.all([
+      institutionService.getInstitution(institutionId),
+      callService.getInstitutionCalls(institutionId),
+    ]);
+    return { institution, calls };
+  }, [institutionId], `institution-profile-${institutionId}`);
 
-  const institution = institutionService.getInstitution(institutionId);
-  if (!institution || !user) return <Redirect href="/" />;
+  if (!user) return <Redirect href="/" />;
 
-  const institutionCalls = callService.getInstitutionCalls(institutionId);
-  const profileOwner = user.id == institution.id && user.type === "institution";
+  if (loading && !data) {
+    return <Loading />;
+  }
+
+  if (error || !data?.institution) {
+    return (
+      <View className="p-5"><ErrorBox error={error ?? "Instituição não encontrada"} /></View>
+    );
+  }
+
+  const institution = data.institution;
+  const institutionCalls = data.calls;
+  const profileOwner = user.id === institution.id && user.type === "institution";
 
   return (
-    <View>
+    <ScrollView contentContainerClassName="pb-28" refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} colors={[THEME.primary]} tintColor={THEME.primary} />}>
       <View className="bg-card p-5 flex-col gap-2 border-b border-border">
         <View className="flex-row justify-between">
           <View className="bg-primary/50 w-16 h-16 flex items-center justify-center rounded-full">
-            <Text className="text-primary text-2xl font-extrabold">{institution.name.charAt(0)}</Text>
+            <Text className="text-primary text-2xl font-extrabold">
+              {institution.name.charAt(0)}
+            </Text>
           </View>
           {profileOwner && (
             <Link href={`/institution/${user.id}/edit`}>
@@ -95,6 +113,6 @@ export default function InstitutionProfileScreen() {
           </Button>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }

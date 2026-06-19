@@ -1,15 +1,16 @@
-import { ScrollView, View } from "react-native";
+import { Alert, RefreshControl, ScrollView, View } from "react-native";
 import React from "react";
 import { Text } from "@/components/ui/text";
 import Header from "@/components/common/layout/Header";
+import Loading from "@/components/common/layout/Loading";
+import ErrorBox from "@/components/common/layout/ErrorBox";
 import { useAuth } from "@/context/AuthContext";
 import { useRoute } from "@react-navigation/native";
 import { proposalService } from "@/services/ProposalService";
-import { Link, Redirect } from "expo-router";
+import { callService } from "@/services/CallService";
+import { Link, Redirect, router } from "expo-router";
 import { Badge } from "@/components/ui/badge";
 import clsx from "clsx";
-import { callService } from "@/services/CallService";
-import { institutionService } from "@/services/InstitutionService";
 import { Button } from "@/components/ui/button";
 import {
   ChevronRight,
@@ -21,33 +22,97 @@ import {
   User,
 } from "lucide-react-native";
 import { THEME } from "@/lib/theme";
-import { farmerService } from "@/services/FarmerService";
 import ResumedProposalItem from "@/components/common/cards/ResumedProposalItem";
+import { useAsync } from "@/lib/useAsync";
 
 export default function ProposalDetailScreen() {
   const { user } = useAuth();
   const route = useRoute();
-  let { callId, proposalId } = route.params as {
-    callId: number;
-    proposalId: number;
+  const { callId, proposalId } = route.params as {
+    callId: string;
+    proposalId: string;
   };
-  callId = Number(callId);
-  proposalId = Number(proposalId);
-  const proposal = proposalService.getProposal(callId, proposalId);
-  const call = callService.getCall(callId);
 
-  if (!user || !proposal || !call) return <Redirect href="/" />;
+  const { data, loading, error, reload } = useAsync(async () => {
+    const [proposal, call] = await Promise.all([
+      proposalService.getProposal(proposalId),
+      callService.getCall(callId),
+    ]);
+    return { proposal, call };
+  }, [callId, proposalId]);
 
-  const institution = institutionService.getInstitution(call.institutionId);
-  const farmer = farmerService.getFarmer(proposal.farmerId);
-  if (!institution || !farmer) return <Redirect href="/" />;
+  if (!user) return <Redirect href="/" />;
 
+  if (loading && !data) {
+    return (
+      <View className="flex-1">
+        <Header title="Detalhe da Proposta" />
+        <Loading />
+      </View>
+    );
+  }
+
+  if (error || !data?.proposal || !data?.call) {
+    return (
+      <View className="flex-1">
+        <Header title="Detalhe da Proposta" />
+        <View className="p-5"><ErrorBox error={error ?? "Proposta não encontrada"} /></View>
+      </View>
+    );
+  }
+
+  const { proposal, call } = data;
   const callOwner =
     user.type === "institution" && call.institutionId === user.id;
-  const proposalOwner = user.type === "farmer" && proposal.farmerId === user.id;
+  const proposalOwner =
+    user.type === "farmer" && user.id === proposal.farmerId;
 
-  const handleAccept = () => {}
-  const handleReject = () => {}
+  const onAccept = async () => {
+    try {
+      await proposalService.accept(proposal.id);
+      Alert.alert("Pronto", "Proposta aceita.");
+      reload();
+    } catch (e: any) {
+      Alert.alert(
+        "Não foi possível aceitar",
+        e?.response?.data?.message ?? "Tente novamente"
+      );
+    }
+  };
+
+  const onReject = async () => {
+    try {
+      await proposalService.reject(proposal.id);
+      Alert.alert("Pronto", "Proposta rejeitada.");
+      reload();
+    } catch (e: any) {
+      Alert.alert(
+        "Não foi possível rejeitar",
+        e?.response?.data?.message ?? "Tente novamente"
+      );
+    }
+  };
+
+  const onCancel = () => {
+    Alert.alert("Cancelar proposta", "Deseja cancelar esta proposta?", [
+      { text: "Não", style: "cancel" },
+      {
+        text: "Sim, cancelar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await proposalService.cancel(proposal.id);
+            router.back();
+          } catch (e: any) {
+            Alert.alert(
+              "Erro",
+              e?.response?.data?.message ?? "Não foi possível cancelar"
+            );
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <View className="flex-1">
@@ -57,8 +122,8 @@ export default function ProposalDetailScreen() {
             "text-xs",
             proposal.status == "accepted" && "bg-success/20",
             proposal.status == "pending" && "bg-warning/20",
-            proposal.status == "rejected" && "bg-destructive/20",
-            proposal.status == "canceled" && "bg-destructive/20"
+            (proposal.status == "rejected" || proposal.status == "canceled") &&
+              "bg-destructive/20"
           )}
         >
           <Text
@@ -66,8 +131,9 @@ export default function ProposalDetailScreen() {
               "text-xs",
               proposal.status == "accepted" && "text-success",
               proposal.status == "pending" && "text-warning",
-              proposal.status == "rejected" && "text-destructive",
-              proposal.status == "canceled" && "text-destructive"
+              (proposal.status == "rejected" ||
+                proposal.status == "canceled") &&
+                "text-destructive"
             )}
           >
             {proposal.status == "accepted" && "Aceito"}
@@ -77,13 +143,13 @@ export default function ProposalDetailScreen() {
           </Text>
         </Badge>
       </Header>
-      <ScrollView>
+      <ScrollView refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} colors={[THEME.primary]} tintColor={THEME.primary} />}>
         <View className="p-5 flex-col gap-6 pb-48">
           <View className="bg-card border border-border rounded-2xl p-4 flex-col gap-2">
             <Text className="text-xs text-muted font-semibold">CHAMADA</Text>
             <Text className="text-sm font-semibold">{call.title}</Text>
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs text-muted">{institution.name}</Text>
+              <Text className="text-xs text-muted">{call.institutionName}</Text>
               <Link href={`/calls/${call.id}`} asChild>
                 <Button size="sm" variant="ghost">
                   <Text className="text-primary">Ver chamada</Text>
@@ -98,12 +164,13 @@ export default function ProposalDetailScreen() {
               <User color={THEME.muted} />
             </View>
             <View>
-              <Text className="font-semibold">{farmer.name}</Text>
+              <Text className="font-semibold">
+                {proposal.farmerName ?? "Agricultor"}
+              </Text>
               <Text className="text-xs text-muted">
                 Enviada em {proposal.createdAt.toLocaleDateString("pt-br")}
               </Text>
             </View>
-            <ChevronRight size={15} color={THEME.primary} />
           </View>
 
           <Badge
@@ -117,10 +184,7 @@ export default function ProposalDetailScreen() {
               color={proposal.delivery ? THEME.primary : THEME.muted}
             />
             <Text
-              className={clsx(
-                "text-muted",
-                proposal.delivery && "text-primary"
-              )}
+              className={clsx("text-muted", proposal.delivery && "text-primary")}
             >
               {proposal.delivery
                 ? "Realiza entrega própria"
@@ -150,28 +214,44 @@ export default function ProposalDetailScreen() {
             </View>
           </View>
 
-          <View className="bg-card border border-border rounded-2xl p-4 flex-col">
-            <View className="flex-row gap-2 items-center">
-              <MessageSquare size={15} color={THEME.muted} />
-              <Text className="text-muted text-sm">Mensagem do agricultor</Text>
+          {!!proposal.message && (
+            <View className="bg-card border border-border rounded-2xl p-4 flex-col">
+              <View className="flex-row gap-2 items-center">
+                <MessageSquare size={15} color={THEME.muted} />
+                <Text className="text-muted text-sm">
+                  Mensagem do agricultor
+                </Text>
+              </View>
+              <Text>{proposal.message}</Text>
             </View>
-            <Text>{proposal.message}</Text>
-          </View>
+          )}
         </View>
       </ScrollView>
       {callOwner && proposal.status === "pending" && (
         <View className="bg-background border-t border-border absolute bottom-0 left-0 right-0 px-4 py-6 flex-row gap-2">
-          <Button className="flex-1 rounded-2xl" onPress={handleAccept}>
+          <Button className="flex-1 rounded-2xl" onPress={onAccept}>
             <CircleCheck size={15} color="white" />
             <Text>Aceitar</Text>
           </Button>
           <Button
             variant="ghost"
             className="flex-1 border border-destructive rounded-2xl"
-            onPress={handleReject}
+            onPress={onReject}
           >
             <CircleX size={15} color={THEME.destructive} />
             <Text className="text-destructive">Rejeitar</Text>
+          </Button>
+        </View>
+      )}
+      {proposalOwner && proposal.status === "pending" && (
+        <View className="bg-background border-t border-border absolute bottom-0 left-0 right-0 px-4 py-6">
+          <Button
+            variant="ghost"
+            className="rounded-2xl border border-destructive"
+            onPress={onCancel}
+          >
+            <CircleX size={15} color={THEME.destructive} />
+            <Text className="text-destructive">Cancelar Proposta</Text>
           </Button>
         </View>
       )}

@@ -1,49 +1,67 @@
-import { mockProposals } from "@/data/mock";
+import { api } from "@/lib/api";
 import { Proposal } from "@/types/Proposal";
-import { ProposalStatus } from "@/types/Common";
-import { callService } from "./CallService";
+import { toProposal } from "@/lib/mappers";
+import { ProposalBackResponse, CreateProposalDTO } from "@/types/Backend";
+
+export type NewProposalInput = {
+  callId: string;
+  delivery: boolean;
+  message?: string;
+  itens: {
+    product: string;
+    amount: number;
+    unity: string;
+    unitPrice: number;
+  }[];
+};
 
 class ProposalService {
-  getProposal = (callId: number, proposalId: number) =>
-    mockProposals.find((p) => p.callId === callId && p.id === proposalId);
+  async getProposal(id: string): Promise<Proposal> {
+    const { data } = await api.get<ProposalBackResponse>(`/propostas/${id}`);
+    return toProposal(data);
+  }
 
-  getCallProposals = (callId: number) =>
-    mockProposals.filter((p) => p.callId === callId);
+  async getCallProposals(callId: string): Promise<Proposal[]> {
+    const { data } = await api.get<ProposalBackResponse[]>("/propostas", {
+      params: { chamadaId: callId },
+    });
+    return data.map(toProposal);
+  }
 
-  getFarmerProposals = (farmerId: number) =>
-    mockProposals.filter((p) => p.farmerId === farmerId);
+  async getFarmerProposals(farmerId: string): Promise<Proposal[]> {
+    const { data } = await api.get<ProposalBackResponse[]>("/propostas", {
+      params: { agricultorId: farmerId },
+    });
+    return data.map(toProposal);
+  }
 
-  addProposal(proposal: Omit<Proposal, "id" | "createdAt">) {
-    const newProposal = {
-      ...proposal,
-      id: Date.now(),
-      createdAt: new Date(),
+  async create(input: NewProposalInput): Promise<Proposal> {
+    const dto: CreateProposalDTO = {
+      chamadaId: input.callId,
+      realizaEntrega: input.delivery,
+      mensagem: input.message,
+      itens: input.itens.map((i) => ({
+        produto: i.product,
+        quantidade: i.amount,
+        unidade: i.unity,
+        precoPorUnidade: i.unitPrice,
+      })),
     };
-
-    mockProposals.push(newProposal);
+    const { data } = await api.post<ProposalBackResponse>("/propostas", dto);
+    return toProposal(data);
   }
 
-  cancelProposal(id: number) {
-    const idx = mockProposals.findIndex((p) => p.id === id);
-    mockProposals.slice(idx, 1);
+  // A regra de "produto ja aceito" e validada no backend (responde 400 com a mensagem).
+  async accept(id: string): Promise<void> {
+    await api.put(`/propostas/${id}/aceitar`);
   }
 
-  updateProposalStatus(id: number, status: ProposalStatus) {
-    const proposal = mockProposals.find((p) => p.id === id);
-    if (!proposal) throw new Error("Proposta não encontrada");
-    proposal.status = status;
+  async reject(id: string): Promise<void> {
+    await api.put(`/propostas/${id}/rejeitar`);
   }
 
-  canAcceptProposal(proposalId: number) {
-    const proposal = mockProposals.find((p) => p.id === proposalId);
-    if (!proposal) throw new Error("Proposta não encontrada.");
-    const acceptedsProducts = new Set(
-      callService.getAcceptedCallItems(proposal.callId)
-    );
-    const blockedProducts = proposal.itens
-      .map((i) => i.product)
-      .filter((i) => acceptedsProducts.has(i));
-    return { canAccept: blockedProducts.length === 0, blockedProducts };
+  async cancel(id: string): Promise<void> {
+    await api.delete(`/propostas/${id}`);
   }
 }
 

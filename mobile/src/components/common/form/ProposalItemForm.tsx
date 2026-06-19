@@ -3,17 +3,20 @@ import React from "react";
 import z from "zod";
 import { Separator } from "@/components/ui/separator";
 import SelectField from "./SelectField";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import NumberField from "./NumberField";
 import { UNITS_OPTIONS } from "@/utils/options";
 import CurrencyField from "./CurrencyField";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { Option } from "@/components/ui/select";
 
 type ProposalItemFormProps = {
   handleAdd: (item: ProposalItemFormOutputData) => void;
-  categories
+  categoriesOptions: Option[];
+  productsOptions: Option[];
+  maxByProduct?: Record<string, number>;
 };
 
 export const proposalItemFormSchema = z.object({
@@ -24,29 +27,28 @@ export const proposalItemFormSchema = z.object({
     .int("A Quantidade deve ser inteira")
     .positive("A Quantidade deve ser maior que zero"),
   unity: z.string().trim().min(1, "A unidade é obrigatória"),
-  unityPrice: z
+  unitPrice: z
     .string()
     .trim()
     .min(1, "O preço unitário é obrigatório")
-    .transform((value) => {
-      return Number(
+    .transform((value) =>
+      Number(
         value.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
-      );
-    })
+      )
+    )
     .pipe(z.number().nonnegative("Preço unitário inválido")),
 });
 
 export type ProposalItemFormInputData = z.input<typeof proposalItemFormSchema>;
-export type ProposalItemFormOutputData = z.output<
-  typeof proposalItemFormSchema
->;
+export type ProposalItemFormOutputData = z.output<typeof proposalItemFormSchema>;
 
 export default function ProposalItemForm({
   handleAdd,
   categoriesOptions,
   productsOptions,
+  maxByProduct,
 }: ProposalItemFormProps) {
-  const { control, handleSubmit } = useForm<
+  const { control, handleSubmit, reset, setError } = useForm<
     ProposalItemFormInputData,
     any,
     ProposalItemFormOutputData
@@ -55,11 +57,23 @@ export default function ProposalItemForm({
     defaultValues: {
       product: "",
       category: "",
-      unity: "",
-      unityPrice: "",
-      amount: "",
+      unity: "kilograms",
+      amount: 0,
+      unitPrice: "",
     },
   });
+
+  const selectedProduct = useWatch({ control, name: "product" });
+  const maxAmount = maxByProduct?.[selectedProduct];
+
+  const onAdd = (item: ProposalItemFormOutputData) => {
+    if (maxAmount !== undefined && item.amount > maxAmount) {
+      setError("amount", { message: `Máximo disponível: ${maxAmount}` });
+      return;
+    }
+    handleAdd(item);
+    reset();
+  };
 
   return (
     <>
@@ -85,7 +99,7 @@ export default function ProposalItemForm({
             <NumberField
               formControl={control}
               name="amount"
-              label="Quantidade"
+              label={maxAmount !== undefined ? `Quantidade (máx. ${maxAmount})` : "Quantidade"}
               className="bg-transparent"
             />
           </View>
@@ -100,13 +114,13 @@ export default function ProposalItemForm({
 
         <CurrencyField
           formControl={control}
-          name="unityPrice"
+          name="unitPrice"
           label="Preço por unidade"
           className="bg-transparent"
         />
       </View>
-      <Separator className="my-3"/>
-      <Button>
+      <Separator className="my-3" />
+      <Button className="rounded-2xl" onPress={handleSubmit(onAdd)}>
         <Text>Adicionar Item</Text>
       </Button>
     </>

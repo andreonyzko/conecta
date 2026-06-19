@@ -2,9 +2,10 @@ import { CallStatus } from "./Common";
 import { CallItem } from "./CallItem";
 
 export interface Call {
-  id: number;
+  id: string;
   title: string;
-  institutionId: number;
+  institutionId: string;
+  institutionName?: string;
   description: string;
   startDate: Date;
   endDate: Date;

@@ -7,7 +7,7 @@ export default function EditFarmerProfileRoute() {
   const { user } = useAuth();
   const { farmerId } = useLocalSearchParams<{ farmerId: string }>();
 
-  if (!user || user.type !== "farmer" || user.id !== Number(farmerId)) {
+  if (!user || user.type !== "farmer" || user.id !== farmerId) {
     return <Redirect href="/calls" />;
   }
 

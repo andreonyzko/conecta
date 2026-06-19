@@ -10,7 +10,7 @@ import { PropostaRepository } from '../repositories/PropostaRepository';
 import { AvaliacaoRepository } from '../repositories/AvaliacaoRepository';
 import { LicitacaoGanhaRepository } from '../repositories/LicitacaoGanhaRepository';
 import { JWTPayload } from '../helpers/tokenHelper';
-import { normalizeProduto } from '../helpers/produtos';
+import { normalizeProduto, quantidadeAtendidaPorProduto } from '../helpers/produtos';
 import { ChamadaStatus } from '../models/chamada';
 import { CreateChamadaDto } from '../dto/chamada/create-chamada.dto';
 import { EncerrarChamadaDto } from '../dto/chamada/encerrar-chamada.dto';
@@ -106,23 +106,37 @@ export class ChamadaService {
     };
   }
 
-  /** Produtos (normalizados) ja aceitos em alguma proposta da chamada. */
-  async getProdutosAceitos(id: string): Promise<string[]> {
+  /**
+   * Itens da chamada com a quantidade ja atendida (soma das propostas aceitas),
+   * a quantidade restante e se o item ja foi totalmente atendido.
+   */
+  async getItensComStatus(id: string) {
+    const chamada = await this.findById(id);
     const aceitas = await PropostaRepository.findAceitasDaChamada(id);
-    const set = new Set<string>();
-    for (const proposta of aceitas) {
-      for (const item of proposta.itens) {
-        set.add(normalizeProduto(item.produto));
-      }
-    }
-    return Array.from(set);
+    const atendido = quantidadeAtendidaPorProduto(aceitas);
+
+    return chamada.itens.map((item) => {
+      const quantidadeAtendida = atendido.get(normalizeProduto(item.produto)) ?? 0;
+      const quantidadeRestante = Math.max(0, item.quantidade - quantidadeAtendida);
+      return {
+        ...item,
+        quantidadeAtendida,
+        quantidadeRestante,
+        atendido: quantidadeRestante <= 0,
+      };
+    });
   }
 
-  /** Itens da chamada que ainda nao foram aceitos em nenhuma proposta. */
+  /** Itens da chamada que ainda tem quantidade a ser atendida (saldo > 0). */
   async getItensDisponiveis(id: string) {
-    const chamada = await this.findById(id);
-    const aceitos = new Set(await this.getProdutosAceitos(id));
-    return chamada.itens.filter((item) => !aceitos.has(normalizeProduto(item.produto)));
+    const itens = await this.getItensComStatus(id);
+    return itens.filter((item) => item.quantidadeRestante > 0);
+  }
+
+  /** True quando todos os itens da chamada estao totalmente atendidos. */
+  async chamadaTotalmenteAtendida(id: string): Promise<boolean> {
+    const itens = await this.getItensComStatus(id);
+    return itens.length > 0 && itens.every((item) => item.atendido);
   }
 
   async getPropostas(id: string, user: JWTPayload) {

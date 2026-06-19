@@ -1,5 +1,5 @@
 export interface Institution {
-  id: number;
+  id: string;
   name: string;
   cnpj: string;
   phone: string;

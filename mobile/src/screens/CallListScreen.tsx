@@ -1,13 +1,14 @@
-import { Image, ScrollView, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import { Image, RefreshControl, ScrollView, View } from "react-native";
+import React, { useMemo, useState } from "react";
 import { Text } from "@/components/ui/text";
 import { useAuth } from "@/context/AuthContext";
 import clsx from "clsx";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CallCard from "@/components/common/cards/CallCard";
-import { Call } from "@/types/Call";
 import { callService } from "@/services/CallService";
+import { useAsync } from "@/lib/useAsync";
+import Loading from "@/components/common/layout/Loading";
 import { Search } from "lucide-react-native";
 import { THEME } from "@/lib/theme";
 
@@ -16,32 +17,27 @@ export default function CallListScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [callsList, setCallsList] = useState<"all" | "mine">("all");
-  const [calls, setCalls] = useState<Call[]>([]);
 
-  useEffect(() => {
-    setCalls(callService.getAll());
-  }, []);
+  const { data: allCalls, loading, reload } = useAsync(() => callService.getAll(), [], "call-list");
 
-  useEffect(() => {
-    let filteredCalls = callService.getAll();
+  const calls = useMemo(() => {
+    let list = allCalls ?? [];
 
     if (callsList === "mine") {
-      filteredCalls = calls.filter((c) => c.institutionId === user!.id);
-    } else {
+      list = list.filter((c) => c.institutionId === user?.id);
     }
 
     if (search.trim()) {
-      filteredCalls = filteredCalls.filter(
+      const q = search.toLowerCase();
+      list = list.filter(
         (c) =>
-          c.title.toLowerCase().includes(search.toLowerCase()) ||
-          c.itens
-            .map((i) => i.product.toLowerCase())
-            .includes(search.toLowerCase())
+          c.title.toLowerCase().includes(q) ||
+          c.itens.some((i) => i.product.toLowerCase().includes(q))
       );
     }
 
-    setCalls(filteredCalls);
-  }, [search, callsList]);
+    return list;
+  }, [allCalls, callsList, search, user?.id]);
 
   const handleSearchBtn = () => {
     setSearchOpen((prev) => !prev);
@@ -113,8 +109,16 @@ export default function CallListScreen() {
           </Tabs>
         )}
       </View>
-      <ScrollView className="p-4" contentContainerClassName="pb-52">
+      <ScrollView
+        className="p-4"
+        contentContainerClassName="pb-52"
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} colors={[THEME.primary]} tintColor={THEME.primary} />}
+      >
         <View className="flex-col gap-5">
+          {loading && !allCalls && <Loading />}
+          {!loading && calls.length === 0 && (
+            <Text className="text-muted">Nenhuma chamada encontrada.</Text>
+          )}
           {calls.map((call) => (
             <CallCard key={call.id} call={call} />
           ))}

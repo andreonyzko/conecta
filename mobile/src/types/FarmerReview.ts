@@ -1,6 +1,6 @@
 export interface FarmerReview {
-  id: number;
-  institutionId: number;
+  id: string;
+  institutionId: string;
   grade: number;
   comment: string;
   date: Date;

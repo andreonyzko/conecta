@@ -1,5 +1,6 @@
-import { ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import React, { useState } from "react";
+import { callService } from "@/services/CallService";
 import z from "zod";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,7 +75,24 @@ export default function CallFormScreen() {
     setNewItemDialogOpen(false);
   };
 
-  const onSubmit = (data: CallFormOutputData) => {};
+  const onSubmit = async (data: CallFormOutputData) => {
+    try {
+      await callService.addCall({
+        title: data.title,
+        description: data.description,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        itens: data.itens,
+      });
+      Alert.alert("Sucesso", "Chamada publicada!");
+      router.replace("/calls");
+    } catch (e: any) {
+      Alert.alert(
+        "Erro",
+        e?.response?.data?.message ?? "Não foi possível publicar a chamada"
+      );
+    }
+  };
 
   return (
     <View className="h-full">

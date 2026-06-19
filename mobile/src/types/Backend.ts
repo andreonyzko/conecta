@@ -97,10 +97,10 @@ export type FarmerBackResponse = {
     telefone: string,
     email: string,
     realizaEntrega: boolean,
-    produtos: [],
-    avaliacoes: [],
-    licitacoesGanhas: [],
-    propostas: [],
+    produtos: ProductBackResponse[],
+    avaliacoes: ReviewBackResponse[],
+    licitacoesGanhas: BidWonBackResponse[],
+    propostas: ProposalBackResponse[],
     createdAt: Date,
     updatedAt: Date
 }
@@ -112,7 +112,7 @@ export type InstitutionBackResponse = {
     telefone: string,
     email: string,
     numeroAlunos: number,
-    chamadas: [],
+    chamadas: CallBackResponse[],
     createdAt: Date,
     updatedAt: Date
 }
@@ -191,6 +191,12 @@ export type ProductBackResponse = {
     precoSugerido: number,
     createdAt: Date,
     updatedAt: Date
+}
+
+export type ItemChamadaComStatus = CallItemBackResponse & {
+    quantidadeAtendida: number,
+    quantidadeRestante: number,
+    atendido: boolean
 }
 
 export type ProposalBackResponse = {

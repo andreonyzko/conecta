@@ -1,5 +1,5 @@
 export interface ClosingReview {
-    farmerId: number,
+    farmerId: string,
     grade: number,
     comment: string
 }

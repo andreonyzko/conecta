@@ -1,5 +1,5 @@
 export interface ProposalItem {
-  id: number;
+  id: string;
   product: string;
   amount: number;
   unity: string;
