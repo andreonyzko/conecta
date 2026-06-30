@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-1">Minhas Propostas</h2>
+<p class="text-muted mb-4">Propostas que você enviou às chamadas públicas</p>
+
+<% if (propostas.length === 0) { %>
+  <p class="text-muted">Você ainda não enviou nenhuma proposta. <a href="/chamadas">Ver chamadas disponíveis</a></p>
+<% } %>
+
+<div class="table-responsive">
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr><th>Chamada</th><th>Valor Total</th><th>Status</th><th>Entrega</th><th>Ações</th></tr>
+    </thead>
+    <tbody>
+    <% propostas.forEach(p => { %>
+      <tr>
+        <td><a href="/chamadas/<%= p.chamadaId %>"><%= p.chamada?.titulo %></a></td>
+        <td>R$ <%= p.valorTotal.toFixed(2) %></td>
+        <td><span class="badge bg-<%= p.status === 'aceita' ? 'success' : p.status === 'rejeitada' ? 'danger' : 'warning text-dark' %>"><%= p.status %></span></td>
+        <td><%= p.realizaEntrega ? 'Sim' : 'Não' %></td>
+        <td>
+          <a href="/propostas/<%= p.id %>" class="btn btn-sm btn-outline-secondary">Ver</a>
+          <% if (p.status === 'pendente') { %>
+            <form method="POST" action="/propostas/<%= p.id %>?_method=DELETE" class="d-inline" onsubmit="return confirm('Cancelar proposta?')">
+              <button class="btn btn-sm btn-outline-danger">Cancelar</button>
+            </form>
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/footer') %>

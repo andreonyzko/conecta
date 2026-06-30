@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-4">Editar Perfil da Instituição</h2>
+<div class="card shadow-sm" style="max-width:640px">
+  <div class="card-body p-4">
+    <form method="POST" action="/instituicao/<%= instituicao.id %>?_method=PUT">
+      <div class="mb-3"><label class="form-label">Nome</label><input type="text" name="nome" class="form-control" value="<%= instituicao.nome %>" required /></div>
+      <div class="mb-3"><label class="form-label">CNPJ</label><input type="text" name="cnpj" class="form-control" value="<%= instituicao.cnpj || '' %>" /></div>
+      <div class="mb-3"><label class="form-label">E-mail de contato</label><input type="email" name="email" class="form-control" value="<%= instituicao.email || '' %>" /></div>
+      <div class="mb-3"><label class="form-label">Telefone</label><input type="text" name="telefone" class="form-control" value="<%= instituicao.telefone || '' %>" /></div>
+      <div class="mb-3"><label class="form-label">Endereço</label><input type="text" name="endereco" class="form-control" value="<%= instituicao.endereco || '' %>" /></div>
+      <div class="mb-3"><label class="form-label">Número de alunos/beneficiários</label><input type="number" name="numeroAlunos" class="form-control" value="<%= instituicao.numeroAlunos || 0 %>" min="0" /></div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="/instituicao/<%= instituicao.id %>" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

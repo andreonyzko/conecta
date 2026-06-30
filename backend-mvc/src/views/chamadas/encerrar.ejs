@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-1">Encerrar Chamada</h2>
+<p class="text-muted mb-4"><%= chamada.titulo %></p>
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <p class="mb-3">Avalie os agricultores cujas propostas foram aceitas:</p>
+    <form method="POST" action="/chamadas/<%= chamada.id %>/encerrar">
+      <% agricultores.forEach(a => { %>
+        <div class="border rounded p-3 mb-3">
+          <h6><i class="bi bi-person-fill me-1"></i><%= a.nome %></h6>
+          <input type="hidden" name="agricultor_id" value="<%= a.id %>" />
+          <div class="mb-2">
+            <label class="form-label">Nota (1–5)</label>
+            <select name="nota" class="form-select w-auto" required>
+              <option value="5" selected>⭐⭐⭐⭐⭐ (5)</option>
+              <option value="4">⭐⭐⭐⭐ (4)</option>
+              <option value="3">⭐⭐⭐ (3)</option>
+              <option value="2">⭐⭐ (2)</option>
+              <option value="1">⭐ (1)</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Comentário <span class="text-danger">*</span></label>
+            <textarea name="comentario" class="form-control" rows="2" required placeholder="Obrigatório"></textarea>
+          </div>
+        </div>
+      <% }) %>
+      <% if (agricultores.length === 0) { %>
+        <p class="text-muted">Nenhuma proposta aceita para avaliar.</p>
+      <% } %>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success" <%= agricultores.length === 0 ? 'disabled' : '' %>>Encerrar e Avaliar</button>
+        <a href="/chamadas/<%= chamada.id %>" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

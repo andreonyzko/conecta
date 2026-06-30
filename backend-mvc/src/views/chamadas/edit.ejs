@@ -1,0 +1,20 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-4">Editar Chamada</h2>
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="POST" action="/chamadas/<%= chamada.id %>?_method=PUT">
+      <div class="mb-3"><label class="form-label">Título</label><input type="text" name="titulo" class="form-control" value="<%= chamada.titulo %>" required /></div>
+      <div class="mb-3"><label class="form-label">Descrição</label><textarea name="descricao" class="form-control" rows="3" required><%= chamada.descricao %></textarea></div>
+      <div class="row mb-3">
+        <div class="col"><label class="form-label">Data Início</label><input type="date" name="dataInicio" class="form-control" value="<%= chamada.dataInicio %>" required /></div>
+        <div class="col"><label class="form-label">Data Fim</label><input type="date" name="dataFim" class="form-control" value="<%= chamada.dataFim %>" required /></div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="/chamadas/<%= chamada.id %>" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

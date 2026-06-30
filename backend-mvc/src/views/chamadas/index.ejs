@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2>Chamadas Públicas</h2>
+  <% if (user && user.role === 'instituicao') { %>
+    <a href="/chamadas/new" class="btn btn-success"><i class="bi bi-plus-circle me-1"></i>Nova Chamada</a>
+  <% } %>
+</div>
+<% if (chamadas.length === 0) { %>
+  <p class="text-muted">Nenhuma chamada disponível.</p>
+<% } %>
+<div class="row g-3">
+<% chamadas.forEach(c => { %>
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between">
+          <h5 class="card-title"><%= c.titulo %></h5>
+          <span class="badge badge-status-<%= c.status %>"><%= c.status %></span>
+        </div>
+        <p class="text-muted small mb-1"><i class="bi bi-building me-1"></i><%= c.instituicao?.nome %></p>
+        <p class="text-muted small"><i class="bi bi-calendar me-1"></i><%= c.dataInicio %> até <%= c.dataFim %></p>
+        <p class="card-text text-truncate"><%= c.descricao %></p>
+        <p class="small"><strong><%= c.itens?.length %></strong> item(s) solicitado(s)</p>
+        <a href="/chamadas/<%= c.id %>" class="btn btn-outline-success btn-sm">Ver detalhes</a>
+      </div>
+    </div>
+  </div>
+<% }) %>
+</div>
+<%- include('../partials/footer') %>

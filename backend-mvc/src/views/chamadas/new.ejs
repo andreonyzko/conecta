@@ -1,0 +1,45 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-4">Nova Chamada Pública</h2>
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="POST" action="/chamadas">
+      <div class="mb-3"><label class="form-label">Título</label><input type="text" name="titulo" class="form-control" required /></div>
+      <div class="mb-3"><label class="form-label">Descrição</label><textarea name="descricao" class="form-control" rows="3" required></textarea></div>
+      <div class="row mb-3">
+        <div class="col"><label class="form-label">Data Início</label><input type="date" name="dataInicio" class="form-control" required /></div>
+        <div class="col"><label class="form-label">Data Fim</label><input type="date" name="dataFim" class="form-control" required /></div>
+      </div>
+
+      <h5 class="mt-4 mb-2">Itens Solicitados</h5>
+      <div id="itens-container"></div>
+      <button type="button" class="btn btn-outline-success btn-sm mb-3" onclick="addItem()"><i class="bi bi-plus me-1"></i>Adicionar Item</button>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-success">Publicar Chamada</button>
+        <a href="/chamadas" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+let itemCount = 0;
+function addItem() {
+  itemCount++;
+  const div = document.createElement('div');
+  div.className = 'border rounded p-3 mb-2 position-relative';
+  div.innerHTML = `
+    <button type="button" class="btn-close position-absolute top-0 end-0 m-2" onclick="this.parentElement.remove()"></button>
+    <div class="row g-2">
+      <div class="col-md-4"><label class="form-label">Produto</label><input type="text" name="item_produto" class="form-control" required /></div>
+      <div class="col-md-4"><label class="form-label">Categoria</label><input type="text" name="item_categoria" class="form-control" required /></div>
+      <div class="col-md-2"><label class="form-label">Quantidade</label><input type="number" name="item_quantidade" class="form-control" min="0" step="0.01" required /></div>
+      <div class="col-md-2"><label class="form-label">Unidade</label><input type="text" name="item_unidade" class="form-control" placeholder="kg" required /></div>
+      <div class="col-md-4"><label class="form-label">Frequência</label><input type="text" name="item_frequencia" class="form-control" placeholder="Semanal" required /></div>
+      <div class="col-md-4"><label class="form-label">Preço Referência (R$)</label><input type="number" name="item_precoReferencia" class="form-control" min="0" step="0.01" value="0" required /></div>
+    </div>`;
+  document.getElementById('itens-container').appendChild(div);
+}
+addItem();
+</script>
+<%- include('../partials/footer') %>

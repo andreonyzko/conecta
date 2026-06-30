@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<h2 class="mb-1">Enviar Proposta</h2>
+<p class="text-muted mb-4">Chamada: <a href="/chamadas/<%= chamada.id %>"><%= chamada.titulo %></a></p>
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <form method="POST" action="/chamadas/<%= chamada.id %>/propostas">
+      <div class="mb-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" name="realizaEntrega" id="realizaEntrega" value="on" />
+          <label class="form-check-label" for="realizaEntrega">Realizo entrega</label>
+        </div>
+      </div>
+      <div class="mb-3"><label class="form-label">Mensagem (opcional)</label><textarea name="mensagem" class="form-control" rows="2"></textarea></div>
+
+      <h5 class="mb-2">Itens que posso fornecer</h5>
+      <p class="text-muted small mb-3">Adicione os produtos desta chamada que você pode fornecer:</p>
+      <div id="itens-container"></div>
+      <button type="button" class="btn btn-outline-success btn-sm mb-3" onclick="addItem()"><i class="bi bi-plus me-1"></i>Adicionar Item</button>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-success">Enviar Proposta</button>
+        <a href="/chamadas/<%= chamada.id %>" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+const itensDisponiveis = <%- JSON.stringify(itensDisponiveis) %>;
+function addItem() {
+  const div = document.createElement('div');
+  div.className = 'border rounded p-3 mb-2 position-relative';
+  const opts = itensDisponiveis.map(i =>
+    `<option value="${i.produto}" data-max="${i.quantidadeRestante}" data-unidade="${i.unidade}">${i.produto} (disponível: ${i.quantidadeRestante} ${i.unidade})</option>`
+  ).join('');
+  div.innerHTML = `
+    <button type="button" class="btn-close position-absolute top-0 end-0 m-2" onclick="this.parentElement.remove()"></button>
+    <div class="row g-2">
+      <div class="col-md-5">
+        <label class="form-label">Produto</label>
+        <select name="item_produto" class="form-select" required onchange="updateMax(this)">
+          <option value="">Selecione...</option>${opts}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Quantidade</label>
+        <input type="number" name="item_quantidade" class="form-control" min="0.01" step="0.01" required />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Unidade</label>
+        <input type="text" name="item_unidade" class="form-control" placeholder="kg" required />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Preço/Unidade (R$)</label>
+        <input type="number" name="item_precoPorUnidade" class="form-control" min="0" step="0.01" required />
+      </div>
+    </div>`;
+  document.getElementById('itens-container').appendChild(div);
+  const newDiv = document.getElementById('itens-container').lastElementChild;
+  const sel = newDiv.querySelector('select');
+  updateMax(sel);
+}
+function updateMax(sel) {
+  const opt = sel.selectedOptions[0];
+  const max = parseFloat(opt?.dataset?.max || '0');
+  const row = sel.closest('.row');
+  const input = row.querySelector('input[name="item_quantidade"]');
+  const unitInput = row.querySelector('input[name="item_unidade"]');
+  if (input && max > 0) { input.max = max; input.title = `Máximo: ${max}`; }
+  if (unitInput && opt?.dataset?.unidade) { unitInput.value = opt.dataset.unidade; }
+}
+addItem();
+</script>
+<%- include('../partials/footer') %>

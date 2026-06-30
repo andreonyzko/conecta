@@ -1,0 +1,7 @@
+<%- include('./partials/header') %>
+<div class="text-center py-5">
+  <h1 class="display-1 text-muted"><%= locals.status || 500 %></h1>
+  <h4 class="mb-3"><%= locals.mensagem || 'Ocorreu um erro inesperado.' %></h4>
+  <a href="/" class="btn btn-success">Voltar ao início</a>
+</div>
+<%- include('./partials/footer') %>

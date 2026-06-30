@@ -1,0 +1,52 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <div>
+    <h2>Proposta #<%= proposta.id.slice(0, 8) %>...</h2>
+    <p class="text-muted">Chamada: <a href="/chamadas/<%= proposta.chamadaId %>"><%= proposta.chamada?.titulo %></a></p>
+  </div>
+  <span class="badge fs-6 bg-<%= proposta.status === 'aceita' ? 'success' : proposta.status === 'rejeitada' ? 'danger' : 'warning text-dark' %>"><%= proposta.status %></span>
+</div>
+
+<div class="card mb-4 shadow-sm">
+  <div class="card-body">
+    <p class="mb-1"><strong>Agricultor:</strong> <a href="/agricultor/<%= proposta.agricultorId %>"><%= proposta.agricultor?.nome %></a></p>
+    <p class="mb-1"><strong>Valor Total:</strong> R$ <%= proposta.valorTotal.toFixed(2) %></p>
+    <p class="mb-0"><strong>Realiza Entrega:</strong> <%= proposta.realizaEntrega ? 'Sim' : 'Não' %></p>
+  </div>
+</div>
+
+<h5 class="mb-3">Itens Ofertados</h5>
+<div class="table-responsive mb-4">
+  <table class="table table-bordered">
+    <thead class="table-light"><tr><th>Produto</th><th>Quantidade</th><th>Preço Unit.</th><th>Subtotal</th></tr></thead>
+    <tbody>
+    <% proposta.itens?.forEach(item => { %>
+      <tr>
+        <td><%= item.produto %></td>
+        <td><%= item.quantidade %></td>
+        <td>R$ <%= (item.precoPorUnidade || 0).toFixed(2) %></td>
+        <td>R$ <%= (item.quantidade * (item.precoPorUnidade || 0)).toFixed(2) %></td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex gap-2">
+  <% if (user && user.role === 'instituicao' && proposta.status === 'pendente') { %>
+    <form method="POST" action="/propostas/<%= proposta.id %>/aceitar" onsubmit="return confirm('Aceitar esta proposta?')">
+      <button class="btn btn-success"><i class="bi bi-check me-1"></i>Aceitar</button>
+    </form>
+    <form method="POST" action="/propostas/<%= proposta.id %>/rejeitar" onsubmit="return confirm('Rejeitar esta proposta?')">
+      <button class="btn btn-outline-danger">Rejeitar</button>
+    </form>
+  <% } %>
+  <% if (user && user.role === 'agricultor' && user.perfilId === proposta.agricultorId && proposta.status === 'pendente') { %>
+    <form method="POST" action="/propostas/<%= proposta.id %>?_method=DELETE" onsubmit="return confirm('Cancelar sua proposta?')">
+      <button class="btn btn-outline-danger">Cancelar Proposta</button>
+    </form>
+  <% } %>
+  <a href="/chamadas/<%= proposta.chamadaId %>" class="btn btn-outline-secondary">Voltar à Chamada</a>
+</div>
+<%- include('../partials/footer') %>

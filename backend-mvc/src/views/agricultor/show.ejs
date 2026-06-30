@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+<%- include('../partials/flash') %>
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2><%= agricultor.nome %></h2>
+    <p class="text-muted mb-0"><i class="bi bi-geo-alt me-1"></i><%= agricultor.municipio %>, <%= agricultor.estado %></p>
+    <p class="text-muted"><i class="bi bi-telephone me-1"></i><%= agricultor.telefone %></p>
+  </div>
+  <% if (user && user.perfilId === agricultor.id) { %>
+    <a href="/agricultor/<%= agricultor.id %>/edit" class="btn btn-outline-secondary">Editar Perfil</a>
+  <% } %>
+</div>
+
+<% if (agricultor.cpf) { %>
+  <p><strong>CPF:</strong> <%= agricultor.cpf %></p>
+<% } %>
+
+<% if (avaliacaoMedia > 0) { %>
+  <div class="d-flex align-items-center gap-2 mb-4">
+    <span class="text-warning fs-4">
+      <% for (let i = 1; i <= 5; i++) { %>
+        <i class="bi bi-star<%= i <= Math.round(avaliacaoMedia) ? '-fill' : '' %>"></i>
+      <% } %>
+    </span>
+    <span><strong><%= avaliacaoMedia.toFixed(1) %></strong> (<%= avaliacoes.length %> avaliação<%= avaliacoes.length !== 1 ? 'ões' : '' %>)</span>
+  </div>
+<% } %>
+
+<h5 class="mb-3">Produtos</h5>
+<% if (agricultor.produtos?.length === 0) { %>
+  <p class="text-muted">Nenhum produto cadastrado.</p>
+<% } %>
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <% agricultor.produtos?.forEach(p => { %>
+    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-3 py-2 fs-6"><%= p.nome %></span>
+  <% }) %>
+</div>
+
+<% if (licitacoesGanhas.length > 0) { %>
+  <h5 class="mb-3">Chamadas Atendidas (<%= licitacoesGanhas.length %>)</h5>
+  <div class="list-group mb-4">
+  <% licitacoesGanhas.forEach(l => { %>
+    <a href="/chamadas/<%= l.chamada?.id %>" class="list-group-item list-group-item-action">
+      <div class="d-flex justify-content-between">
+        <strong><%= l.chamada?.titulo %></strong>
+        <span class="text-muted small"><%= l.chamada?.instituicao?.nome %></span>
+      </div>
+    </a>
+  <% }) %>
+  </div>
+<% } %>
+
+<% if (avaliacoes.length > 0) { %>
+  <h5 class="mb-3">Avaliações</h5>
+  <% avaliacoes.forEach(a => { %>
+    <div class="card mb-2 shadow-sm">
+      <div class="card-body p-3">
+        <div class="d-flex justify-content-between mb-1">
+          <strong><%= a.instituicao?.nome %></strong>
+          <span class="text-warning">
+            <% for (let i = 1; i <= 5; i++) { %><i class="bi bi-star<%= i <= a.nota ? '-fill' : '' %>"></i><% } %>
+          </span>
+        </div>
+        <p class="mb-0 text-muted"><%= a.comentario %></p>
+      </div>
+    </div>
+  <% }) %>
+<% } %>
+<%- include('../partials/footer') %>
